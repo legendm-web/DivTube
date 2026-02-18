@@ -1,225 +1,331 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Purify Video – Intentional YouTube</title>
-<link rel="icon" href="data:,">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Purify Video – Intentional YouTube</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style id="custom-theme-vars">
+        :root {
+            --bg: #f4f4f5;
+            --text: #1f1f1f;
+            --card-bg: #ffffff;
+            --primary: #46aae9;
+            --accent: rgba(0,0,0,0.05);
+        }
+    </style>
 
-<style>
-:root{
-  --bg-light:#f4f4f5;
-  --text-light:#1f1f1f;
-  --bg-dark:#1e1e20;
-  --text-dark:#dcdcdc;
-  --primary:#46aae9;
-}
+    <style>
+        * { box-sizing: border-box; font-family: 'Noto Sans', sans-serif; }
+        body { margin: 0; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; overflow-x: hidden; }
 
-*{box-sizing:border-box;font-family:'Noto Sans',sans-serif;}
-body{margin:0;}
+        /* --- NAVIGATION --- */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 2rem;
+            background: var(--card-bg);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-[data-theme="light"]{background:var(--bg-light);color:var(--text-light);}
-[data-theme="dark"]{background:var(--bg-dark);color:var(--text-dark);}
+        .logo { font-weight: 600; font-size: 1.2rem; cursor: pointer; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .nav-right { display: flex; gap: 0.8rem; align-items: center; }
 
-header{max-width:1000px;margin:auto;padding:1rem;text-align:center;}
+        /* --- THEME EDITOR & MODALS --- */
+        .floating-panel {
+            display: none;
+            position: fixed;
+            top: 70px; right: 20px;
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 1000;
+            border: 1px solid var(--primary);
+            min-width: 250px;
+        }
+        .color-input { display: flex; justify-content: space-between; margin-bottom: 0.8rem; gap: 1rem; align-items: center; }
+        input[type="color"] { border: none; width: 30px; height: 30px; cursor: pointer; background: none; }
 
-input{
-  padding:0.6rem;
-  font-size:1rem;
-  border-radius:6px;
-  border:1px solid #ccc;
-  width:60%;
-  max-width:400px;
-}
+        /* --- BUTTONS & INPUTS --- */
+        button {
+            padding: 0.6rem 1rem;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        button:active { transform: scale(0.95); }
+        button.secondary { background: var(--accent); color: var(--text); }
+        
+        input[type="text"] {
+            padding: 0.6rem;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+            background: var(--card-bg);
+            color: var(--text);
+            width: 250px;
+        }
 
-button{
-  padding:0.6rem 1rem;
-  background:var(--primary);
-  border:none;
-  border-radius:6px;
-  color:white;
-  font-weight:600;
-  cursor:pointer;
-  margin-left:0.5rem;
-}
+        /* --- LAYOUTS --- */
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        #watch-view { display: none; grid-template-columns: 1fr 350px; gap: 2rem; }
+        
+        /* ZEN MODE */
+        body.zen-mode nav, body.zen-mode .sidebar, body.zen-mode #watch-meta { display: none !important; }
+        body.zen-mode #watch-view { grid-template-columns: 1fr; max-width: 1000px; margin-top: 5vh; }
+        .zen-toggle-btn { position: fixed; bottom: 20px; right: 20px; z-index: 1001; }
 
-.iframe{
-  display:none;
-  aspect-ratio:16/9;
-  margin:2rem auto;
-  max-width:1000px;
-}
+        /* --- VIDEO GRID --- */
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
+        .video-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .video-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .video-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+        .video-info { padding: 1rem; }
+        .video-info strong { display: block; font-size: 0.95rem; margin-bottom: 5px; line-height: 1.2; }
+        .video-info small { opacity: 0.7; font-size: 0.8rem; }
 
-iframe{width:100%;height:100%;border:none;}
+        /* --- HISTORY LIST --- */
+        .history-item { 
+            display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; 
+            padding: 0.5rem; border-radius: 8px; background: var(--accent); cursor: pointer;
+        }
+        .history-item img { width: 80px; border-radius: 4px; }
 
-#results{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-  gap:1rem;
-  margin:2rem auto;
-  max-width:1000px;
-}
+        iframe { width: 100%; aspect-ratio: 16/9; border-radius: 12px; border: none; background: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 
-.video-card{
-  background:rgba(0,0,0,0.05);
-  border-radius:8px;
-  overflow:hidden;
-  cursor:pointer;
-  transition:0.2s;
-}
-
-[data-theme="dark"] .video-card{
-  background:rgba(255,255,255,0.05);
-}
-
-.video-card:hover{transform:scale(1.03);}
-.video-card img{width:100%;display:block;}
-.video-info{padding:0.5rem;text-align:left;}
-.video-info strong{display:block;font-size:0.9rem;}
-.video-info small{opacity:0.7;}
-
-.theme-toggle{
-  position:absolute;
-  top:1rem;
-  right:1rem;
-}
-
-h2{text-align:center;margin-top:2rem;}
-</style>
+        @media (max-width: 900px) {
+            #watch-view { grid-template-columns: 1fr; }
+            input[type="text"] { width: 120px; }
+        }
+    </style>
 </head>
-
 <body>
 
-<button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+<nav>
+    <div class="logo" onclick="showHome()">✨ Purify</div>
+    <form onsubmit="handleSearch(event)">
+        <input type="text" id="searchInput" placeholder="Search focus..." required/>
+    </form>
+    <div class="nav-right">
+        <button class="secondary" onclick="showHistory()">History</button>
+        <button class="secondary" onclick="togglePanel('theme-editor')">🎨 Theme</button>
+        <select id="algoPref" onchange="updateAlgoPref()" style="padding:0.5rem; border-radius:8px; border:none; background:var(--accent); color:var(--text);">
+            <option value="keywords">Keywords</option>
+            <option value="channels">Channels</option>
+            <option value="discovery">Discovery</option>
+        </select>
+    </div>
+</nav>
 
-<header>
-  <h1>Purify Video</h1>
-  <p>Intentional YouTube</p>
-
-  <form onsubmit="handleSearch(event)">
-    <input id="searchInput" placeholder="Search YouTube..." required/>
-    <button type="submit">Search</button>
-  </form>
-</header>
-
-<h2 id="feedTitle">Recommended For You</h2>
-
-<div class="iframe">
-  <iframe id="player" allowfullscreen></iframe>
+<div id="theme-editor" class="floating-panel">
+    <h3 style="margin-top:0">Theme Architect</h3>
+    <div class="color-input">Background <input type="color" id="color-bg" oninput="applyCustomTheme()"></div>
+    <div class="color-input">Text <input type="color" id="color-text" oninput="applyCustomTheme()"></div>
+    <div class="color-input">Card <input type="color" id="color-card" oninput="applyCustomTheme()"></div>
+    <div class="color-input">Primary <input type="color" id="color-primary" oninput="applyCustomTheme()"></div>
+    <button style="width:100%" onclick="togglePanel('theme-editor')">Save & Close</button>
 </div>
 
-<div id="results"></div>
+<div id="history-panel" class="floating-panel" style="width: 350px; max-height: 80vh; overflow-y: auto;">
+    <h3 style="margin:0 0 1rem 0;">Recent History</h3>
+    <div id="history-list"></div>
+    <button class="secondary" style="width:100%; margin-top:1rem;" onclick="clearHistory()">Clear History</button>
+</div>
+
+<button class="zen-toggle-btn" id="zenBtn" onclick="toggleZen()" style="display:none;">Zen Mode</button>
+
+<div class="container">
+    <div id="home-view">
+        <h2 id="feedTitle">Your Intentional Feed</h2>
+        <div id="home-results" class="video-grid"></div>
+    </div>
+
+    <div id="watch-view">
+        <div class="main-content">
+            <iframe id="mainPlayer" allowfullscreen></iframe>
+            <div id="watch-meta">
+                <h2 id="nowPlayingTitle" style="margin-top:1.5rem;"></h2>
+                <p id="nowPlayingChannel" style="opacity:0.6;"></p>
+            </div>
+        </div>
+        <div class="sidebar">
+            <h3 style="margin-top:0">Up Next</h3>
+            <div id="sidebar-results" style="display:flex; flex-direction:column; gap:1rem;"></div>
+        </div>
+    </div>
+</div>
 
 <script>
+/** * IMPORTANT: Replace this with your YouTube Data API v3 Key 
+ */
 const API_KEY = "AIzaSyAsiXire2Ls6HrwkS7tIFNqkNi5xpySeCg";
 
-/* ---------------- THEME ---------------- */
-function setTheme(){
-  const saved = localStorage.getItem("theme");
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const theme = saved ? saved : (prefersDark ? "dark" : "light");
-  document.documentElement.setAttribute("data-theme", theme);
-}
-function toggleTheme(){
-  const current = document.documentElement.getAttribute("data-theme");
-  const newTheme = current === "dark" ? "light" : "dark";
-  document.documentElement.setAttribute("data-theme", newTheme);
-  localStorage.setItem("theme", newTheme);
-}
-setTheme();
-
-/* ---------------- SEARCH ---------------- */
-async function searchVideos(query){
-  const results = document.getElementById("results");
-  results.innerHTML = "Loading...";
-
-  const res = await fetch(
-    `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${encodeURIComponent(query)}&key=${API_KEY}`
-  );
-  const data = await res.json();
-  renderVideos(data.items);
-}
-
-/* ---------------- RENDER ---------------- */
-function renderVideos(items){
-  const results = document.getElementById("results");
-  results.innerHTML = "";
-
-  items.forEach(item=>{
-    const videoId = item.id.videoId;
-    const title = item.snippet.title;
-    const channel = item.snippet.channelTitle;
-    const thumb = item.snippet.thumbnails.medium.url;
-
-    const card = document.createElement("div");
-    card.className = "video-card";
-    card.innerHTML = `
-      <img src="${thumb}">
-      <div class="video-info">
-        <strong>${title}</strong>
-        <small>${channel}</small>
-      </div>
-    `;
-    card.onclick = ()=>loadVideo(videoId, title);
-    results.appendChild(card);
-  });
-}
-
-/* ---------------- PLAYER + TRACKING ---------------- */
-function loadVideo(videoId, title){
-  const player = document.getElementById("player");
-  player.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`;
-  document.querySelector(".iframe").style.display = "block";
-  window.scrollTo({top:0,behavior:"smooth"});
-  updateInterests(title);
-}
-
-/* ---------------- SMART RECOMMENDER ---------------- */
-function updateInterests(title){
-  let interests = JSON.parse(localStorage.getItem("interests")) || {};
-  const words = title.toLowerCase().split(" ");
-
-  words.forEach(word=>{
-    if(word.length > 3){
-      interests[word] = (interests[word] || 0) + 1;
+/* --- APP STATE --- */
+let state = {
+    interests: JSON.parse(localStorage.getItem("interests")) || {},
+    channels: JSON.parse(localStorage.getItem("channels")) || {},
+    history: JSON.parse(localStorage.getItem("watchHistory")) || [],
+    algo: localStorage.getItem("algo") || "keywords",
+    theme: JSON.parse(localStorage.getItem("customTheme")) || {
+        bg: "#f4f4f5", text: "#1f1f1f", card: "#ffffff", primary: "#46aae9"
     }
-  });
+};
 
-  localStorage.setItem("interests", JSON.stringify(interests));
+/* --- THEME ENGINE --- */
+function applyCustomTheme() {
+    state.theme = {
+        bg: document.getElementById('color-bg').value,
+        text: document.getElementById('color-text').value,
+        card: document.getElementById('color-card').value,
+        primary: document.getElementById('color-primary').value
+    };
+    document.getElementById('custom-theme-vars').innerHTML = `
+        :root {
+            --bg: ${state.theme.bg}; --text: ${state.theme.text};
+            --card-bg: ${state.theme.card}; --primary: ${state.theme.primary};
+            --accent: rgba(125,125,125,0.15);
+        }
+    `;
+    localStorage.setItem("customTheme", JSON.stringify(state.theme));
 }
 
-function getTopKeywords(){
-  let interests = JSON.parse(localStorage.getItem("interests")) || {};
-  return Object.entries(interests)
-    .sort((a,b)=>b[1]-a[1])
-    .slice(0,3)
-    .map(entry=>entry[0])
-    .join(" ");
+function togglePanel(id) {
+    const panels = ['theme-editor', 'history-panel'];
+    panels.forEach(p => {
+        const el = document.getElementById(p);
+        if(p === id) el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        else el.style.display = 'none';
+    });
 }
 
-async function loadHomepageFeed(){
-  const keywords = getTopKeywords();
-  if(keywords){
-    searchVideos(keywords);
-  }else{
-    searchVideos("popular technology documentary");
-  }
+/* --- CORE FUNCTIONS --- */
+async function fetchVideos(query, containerId, isSidebar = false) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = "Loading...";
+    try {
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=${isSidebar ? 6 : 12}&q=${encodeURIComponent(query)}&key=${API_KEY}`);
+        const data = await res.json();
+        renderVideos(data.items, container, isSidebar);
+    } catch (e) { container.innerHTML = "API limit or error."; }
 }
 
-/* ---------------- FORM ---------------- */
-function handleSearch(e){
-  e.preventDefault();
-  const query = document.getElementById("searchInput").value.trim();
-  if(query){
-    document.getElementById("feedTitle").innerText = "Search Results";
-    searchVideos(query);
-  }
+function renderVideos(items, container, isSidebar) {
+    container.innerHTML = "";
+    if(!items) return;
+    items.forEach(item => {
+        if (!item.id.videoId) return;
+        const card = document.createElement("div");
+        card.className = "video-card";
+        card.innerHTML = `
+            <img src="${item.snippet.thumbnails.medium.url}">
+            <div class="video-info">
+                <strong>${item.snippet.title}</strong>
+                <small>${item.snippet.channelTitle}</small>
+            </div>`;
+        card.onclick = () => openWatch(item.id.videoId, item.snippet.title, item.snippet.channelTitle, item.snippet.thumbnails.medium.url);
+        container.appendChild(card);
+    });
 }
 
-/* ---------------- INIT ---------------- */
-loadHomepageFeed();
+function openWatch(id, title, channel, thumb) {
+    document.getElementById("home-view").style.display = "none";
+    document.getElementById("watch-view").style.display = "grid";
+    document.getElementById("zenBtn").style.display = "block";
+    document.getElementById("mainPlayer").src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1`;
+    document.getElementById("nowPlayingTitle").innerText = title;
+    document.getElementById("nowPlayingChannel").innerText = channel;
+    
+    addToHistory(id, title, thumb);
+    updateStats(title, channel);
+    fetchVideos(title, "sidebar-results", true);
+    window.scrollTo(0,0);
+}
+
+function showHome() {
+    document.getElementById("home-view").style.display = "block";
+    document.getElementById("watch-view").style.display = "none";
+    document.getElementById("zenBtn").style.display = "none";
+    document.body.classList.remove('zen-mode');
+    document.getElementById("mainPlayer").src = "";
+    loadFeed();
+}
+
+/* --- HISTORY & STATS --- */
+function addToHistory(id, title, thumb) {
+    state.history = state.history.filter(i => i.id !== id);
+    state.history.unshift({id, title, thumb});
+    if(state.history.length > 20) state.history.pop();
+    localStorage.setItem("watchHistory", JSON.stringify(state.history));
+}
+
+function showHistory() {
+    togglePanel('history-panel');
+    const list = document.getElementById('history-list');
+    list.innerHTML = state.history.length ? "" : "No history yet.";
+    state.history.forEach(item => {
+        const div = document.createElement('div');
+        div.className = "history-item";
+        div.innerHTML = `<img src="${item.thumb}"><div><small>${item.title.substring(0,40)}...</small></div>`;
+        div.onclick = () => { openWatch(item.id, item.title, "", item.thumb); togglePanel('history-panel'); };
+        list.appendChild(div);
+    });
+}
+
+function clearHistory() { state.history = []; localStorage.setItem("watchHistory", "[]"); showHistory(); }
+
+function updateStats(title, channel) {
+    title.toLowerCase().split(' ').forEach(w => { if(w.length > 3) state.interests[w] = (state.interests[w] || 0) + 1; });
+    state.channels[channel] = (state.channels[channel] || 0) + 1;
+    localStorage.setItem("interests", JSON.stringify(state.interests));
+    localStorage.setItem("channels", JSON.stringify(state.channels));
+}
+
+/* --- ALGO & FEED --- */
+function updateAlgoPref() {
+    state.algo = document.getElementById("algoPref").value;
+    localStorage.setItem("algo", state.algo);
+    loadFeed();
+}
+
+function loadFeed() {
+    let q = "Productivity Science";
+    if (state.algo === "channels") q = Object.entries(state.channels).sort((a,b)=>b[1]-a[1])[0]?.[0] || q;
+    else if (state.algo === "keywords") q = Object.entries(state.interests).sort((a,b)=>b[1]-a[1]).slice(0,2).map(i=>i[0]).join(" ") || q;
+    else q = ["Deep Work", "Space Documentary", "Historical Crafts", "Nature Calm"][Math.floor(Math.random()*4)];
+    
+    fetchVideos(q, "home-results");
+}
+
+function handleSearch(e) {
+    e.preventDefault();
+    const q = document.getElementById("searchInput").value;
+    document.getElementById("feedTitle").innerText = `Search: ${q}`;
+    fetchVideos(q, "home-results");
+}
+
+function toggleZen() {
+    document.body.classList.toggle('zen-mode');
+    document.getElementById('zenBtn').innerText = document.body.classList.contains('zen-mode') ? "Exit Zen" : "Zen Mode";
+}
+
+/* --- INIT --- */
+document.getElementById('color-bg').value = state.theme.bg;
+document.getElementById('color-text').value = state.theme.text;
+document.getElementById('color-card').value = state.theme.card;
+document.getElementById('color-primary').value = state.theme.primary;
+document.getElementById('algoPref').value = state.algo;
+applyCustomTheme();
+loadFeed();
 </script>
-
 </body>
 </html>
+
