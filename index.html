@@ -8,96 +8,56 @@
     
     <style id="custom-theme-vars">
         :root {
-            --bg: #f4f4f5;
-            --text: #1f1f1f;
-            --card-bg: #ffffff;
-            --primary: #46aae9;
-            --accent: rgba(0,0,0,0.05);
+            --bg: #f4f4f5; --text: #1f1f1f; --card-bg: #ffffff;
+            --primary: #46aae9; --accent: rgba(0,0,0,0.05);
         }
     </style>
 
     <style>
         * { box-sizing: border-box; font-family: 'Noto Sans', sans-serif; }
-        body { margin: 0; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; overflow-x: hidden; }
+        body { margin: 0; background: var(--bg); color: var(--text); transition: background 0.3s; }
 
-        /* --- NAVIGATION --- */
         nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.8rem 2rem;
-            background: var(--card-bg);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.8rem 2rem; background: var(--card-bg);
+            position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
-        .logo { font-weight: 600; font-size: 1.2rem; cursor: pointer; color: var(--primary); display: flex; align-items: center; gap: 10px; }
-        .nav-right { display: flex; gap: 0.8rem; align-items: center; }
-
-        /* --- PANELS --- */
+        .logo { font-weight: 600; font-size: 1.2rem; cursor: pointer; color: var(--primary); }
+        
         .floating-panel {
-            display: none;
-            position: fixed;
-            top: 70px; right: 20px;
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            z-index: 1000;
-            border: 1px solid var(--primary);
-            min-width: 280px;
+            display: none; position: fixed; top: 70px; right: 20px;
+            background: var(--card-bg); padding: 1.5rem; border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000;
+            border: 1px solid var(--primary); min-width: 320px;
         }
-        .color-input { display: flex; justify-content: space-between; margin-bottom: 0.8rem; gap: 1rem; align-items: center; }
-        input[type="color"] { border: none; width: 30px; height: 30px; cursor: pointer; background: none; }
 
-        /* --- UI ELEMENTS --- */
-        button {
-            padding: 0.6rem 1rem;
-            background: var(--primary);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-        }
+        button { padding: 0.6rem 1rem; background: var(--primary); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; }
         button.secondary { background: var(--accent); color: var(--text); }
+        button.train { background: #10b981; font-size: 0.8rem; padding: 4px 8px; }
         
-        input[type="text"] {
-            padding: 0.6rem;
-            border-radius: 8px;
-            border: 1px solid var(--primary);
-            background: var(--card-bg);
-            color: var(--text);
-            width: 200px;
-        }
-
-        /* --- LAYOUTS --- */
-        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
-        #watch-view { display: none; grid-template-columns: 1fr 350px; gap: 2rem; }
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
+        #watch-view { display: none; grid-template-columns: 1fr 380px; gap: 2rem; }
         
-        body.zen-mode nav, body.zen-mode .sidebar, body.zen-mode #watch-meta { display: none !important; }
-        body.zen-mode #watch-view { grid-template-columns: 1fr; max-width: 1000px; margin-top: 5vh; }
-        .zen-toggle-btn { position: fixed; bottom: 20px; right: 20px; z-index: 1001; }
-
-        /* --- VIDEO GRID --- */
-        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
-        .video-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .video-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .video-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.2s; position: relative; }
+        .video-card:hover { transform: translateY(-5px); }
         .video-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
         .video-info { padding: 1rem; }
-        .video-info strong { display: block; font-size: 0.95rem; margin-bottom: 5px; line-height: 1.2; }
-        .video-info small { opacity: 0.7; font-size: 0.8rem; }
 
-        .history-item { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; padding: 0.5rem; border-radius: 8px; background: var(--accent); cursor: pointer; }
-        .history-item img { width: 80px; border-radius: 4px; }
+        #reading-mode-content { 
+            display: none; background: var(--card-bg); padding: 2rem; 
+            border-radius: 12px; line-height: 1.8; margin-top: 1rem; border: 1px solid var(--accent);
+        }
+
+        .training-banner {
+            background: #10b98122; border: 1px solid #10b981; padding: 10px; 
+            border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
+        }
+
+        #loading-trigger { height: 100px; display: flex; align-items: center; justify-content: center; opacity: 0.5; }
 
         iframe { width: 100%; aspect-ratio: 16/9; border-radius: 12px; border: none; background: #000; }
-        
-        #timer-display { font-weight: 600; color: var(--primary); font-size: 0.9rem; }
-
-        @media (max-width: 900px) { #watch-view { grid-template-columns: 1fr; } }
+        @media (max-width: 1000px) { #watch-view { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -105,53 +65,58 @@
 <nav>
     <div class="logo" onclick="showHome()">✨ Purify</div>
     <form onsubmit="handleSearch(event)">
-        <input type="text" id="searchInput" placeholder="Search focus..." required/>
+        <input type="text" id="searchInput" placeholder="Search intentionally..." style="padding:0.6rem; border-radius:8px; border:1px solid var(--primary); width:280px;"/>
     </form>
     <div class="nav-right">
-        <span id="timer-display"></span>
-        <button class="secondary" onclick="showHistory()">History</button>
-        <button class="secondary" onclick="togglePanel('theme-editor')">🎨 Theme</button>
-        <select id="algoPref" onchange="updateAlgoPref()" style="padding:0.5rem; border-radius:8px; border:none; background:var(--accent); color:var(--text);">
-            <option value="keywords">Keywords</option>
-            <option value="channels">Channels</option>
-            <option value="discovery">Discovery</option>
-        </select>
+        <button class="secondary" onclick="togglePanel('algo-panel')">⚙️ Algorithm</button>
+        <button class="secondary" onclick="togglePanel('theme-panel')">🎨 Theme</button>
     </div>
 </nav>
 
-<div id="theme-editor" class="floating-panel">
-    <h3 style="margin-top:0">Theme Architect</h3>
-    <div class="color-input">Background <input type="color" id="color-bg" oninput="applyCustomTheme()"></div>
-    <div class="color-input">Text <input type="color" id="color-text" oninput="applyCustomTheme()"></div>
-    <div class="color-input">Card <input type="color" id="color-card" oninput="applyCustomTheme()"></div>
-    <div class="color-input">Primary <input type="color" id="color-primary" oninput="applyCustomTheme()"></div>
-    <button style="width:100%" onclick="togglePanel('theme-editor')">Save & Close</button>
+<div id="algo-panel" class="floating-panel">
+    <h3 style="margin-top:0">Active Learning</h3>
+    <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+        <input type="checkbox" id="allow-learning" onchange="toggleLearning()"> Allow Algorithm to Learn
+    </label>
+    <p style="font-size:0.8rem; opacity:0.7;">When enabled, Purify analyzes watch patterns and keywords to refine your feed.</p>
+    <hr>
+    <button class="secondary" style="width:100%" onclick="resetBrain()">Reset AI Brain</button>
 </div>
 
-<div id="history-panel" class="floating-panel" style="width: 350px; max-height: 80vh; overflow-y: auto;">
-    <h3 style="margin:0 0 1rem 0;">Recent History</h3>
-    <div id="history-list"></div>
-    <button class="secondary" style="width:100%; margin-top:1rem;" onclick="clearHistory()">Clear History</button>
+<div id="theme-panel" class="floating-panel">
+    <h3>Theme Architect</h3>
+    <label>Background</label><input type="color" id="c-bg" oninput="applyTheme()" style="width:100%;">
+    <label>Text</label><input type="color" id="c-text" oninput="applyTheme()" style="width:100%;">
+    <label>Card</label><input type="color" id="c-card" oninput="applyTheme()" style="width:100%;">
+    <button onclick="togglePanel('theme-panel')" style="width:100%; margin-top:10px;">Close</button>
 </div>
-
-<button class="zen-toggle-btn" id="zenBtn" onclick="toggleZen()" style="display:none;">Zen Mode</button>
 
 <div class="container">
     <div id="home-view">
+        <div id="training-status" class="training-banner" style="display:none;">
+            <span>🧠 AI is currently learning from your focus.</span>
+            <button class="secondary" style="font-size:0.7rem;" onclick="togglePanel('algo-panel')">Settings</button>
+        </div>
         <h2 id="feedTitle">Your Intentional Feed</h2>
         <div id="home-results" class="video-grid"></div>
+        <div id="loading-trigger">Loading more...</div>
     </div>
 
     <div id="watch-view">
-        <div class="main-content">
+        <div class="video-section">
             <iframe id="mainPlayer" allowfullscreen></iframe>
-            <div id="watch-meta">
-                <h2 id="nowPlayingTitle" style="margin-top:1.5rem;"></h2>
-                <p id="nowPlayingChannel" style="opacity:0.6;"></p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
+                <h2 id="v-title" style="margin:0;"></h2>
+                <div style="display:flex; gap:10px;">
+                    <button id="trainBtn" class="train" onclick="trainOnCurrent()" style="display:none;">👍 Train AI</button>
+                    <button class="secondary" onclick="toggleReadingMode()">📖 Read</button>
+                </div>
             </div>
+            <p id="v-channel" style="opacity:0.6;"></p>
+            <div id="reading-mode-content"></div>
         </div>
         <div class="sidebar">
-            <h3 style="margin-top:0">Up Next</h3>
+            <h3>Related Context</h3>
             <div id="sidebar-results" style="display:flex; flex-direction:column; gap:1rem;"></div>
         </div>
     </div>
@@ -162,163 +127,160 @@ const API_KEY = "AIzaSyAsiXire2Ls6HrwkS7tIFNqkNi5xpySeCg";
 
 let state = {
     interests: JSON.parse(localStorage.getItem("interests")) || {},
-    channels: JSON.parse(localStorage.getItem("channels")) || {},
-    history: JSON.parse(localStorage.getItem("watchHistory")) || [],
-    algo: localStorage.getItem("algo") || "keywords",
-    theme: JSON.parse(localStorage.getItem("customTheme")) || {
-        bg: "#f4f4f5", text: "#1f1f1f", card: "#ffffff", primary: "#46aae9"
-    },
-    timeLeft: 3600 // 60 minutes session timer
+    learningEnabled: localStorage.getItem("learningEnabled") === "true",
+    nextPageToken: "",
+    currentQuery: "",
+    isFetching: false,
+    theme: JSON.parse(localStorage.getItem("customTheme")) || {bg: "#f4f4f5", text: "#1f1f1f", card: "#ffffff"}
 };
 
 /* --- THEME --- */
-function applyCustomTheme() {
-    state.theme = {
-        bg: document.getElementById('color-bg').value,
-        text: document.getElementById('color-text').value,
-        card: document.getElementById('color-card').value,
-        primary: document.getElementById('color-primary').value
-    };
-    document.getElementById('custom-theme-vars').innerHTML = `
-        :root {
-            --bg: ${state.theme.bg}; --text: ${state.theme.text};
-            --card-bg: ${state.theme.card}; --primary: ${state.theme.primary};
-            --accent: rgba(125,125,125,0.15);
-        }
-    `;
+function applyTheme() {
+    state.theme = { bg: document.getElementById('c-bg').value, text: document.getElementById('c-text').value, card: document.getElementById('c-card').value };
+    document.getElementById('custom-theme-vars').innerHTML = `:root { --bg: ${state.theme.bg}; --text: ${state.theme.text}; --card-bg: ${state.theme.card}; --primary: #46aae9; --accent: rgba(125,125,125,0.1); }`;
     localStorage.setItem("customTheme", JSON.stringify(state.theme));
 }
 
 function togglePanel(id) {
     const el = document.getElementById(id);
-    const isVisible = el.style.display === 'block';
-    document.querySelectorAll('.floating-panel').forEach(p => p.style.display = 'none');
-    el.style.display = isVisible ? 'none' : 'block';
+    el.style.display = el.style.display === 'block' ? 'none' : 'block';
 }
 
-/* --- CORE APP LOGIC --- */
-async function fetchVideos(query, containerId, isSidebar = false) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = "Loading...";
+/* --- LEARNING SYSTEM --- */
+function toggleLearning() {
+    state.learningEnabled = document.getElementById("allow-learning").checked;
+    localStorage.setItem("learningEnabled", state.learningEnabled);
+    document.getElementById("training-status").style.display = state.learningEnabled ? "flex" : "none";
+    document.getElementById("trainBtn").style.display = state.learningEnabled ? "block" : "none";
+}
+
+function updateAlgorithm(title) {
+    if (!state.learningEnabled) return;
+    const ignore = ["the", "and", "how", "with", "video", "2025", "2026", "official"];
+    title.toLowerCase().replace(/[^\w\s]/gi, '').split(' ').forEach(w => {
+        if(w.length > 3 && !ignore.includes(w)) {
+            state.interests[w] = (state.interests[w] || 0) + 1;
+        }
+    });
+    localStorage.setItem("interests", JSON.stringify(state.interests));
+}
+
+function trainOnCurrent() {
+    const title = document.getElementById("v-title").innerText;
+    updateAlgorithm(title + " analysis documentary depth");
+    alert("Algorithm refined: prioritizing deeper content on this topic.");
+}
+
+function resetBrain() {
+    if(confirm("Erase all learned patterns?")) {
+        state.interests = {};
+        localStorage.setItem("interests", "{}");
+        location.reload();
+    }
+}
+
+/* --- DATA FETCHING --- */
+async function fetchVideos(query, append = false) {
+    if (state.isFetching) return;
+    state.isFetching = true;
+    state.currentQuery = query;
+
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=15&q=${encodeURIComponent(query)}&pageToken=${append ? state.nextPageToken : ""}&key=${API_KEY}`;
+    
     try {
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=${isSidebar ? 6 : 12}&q=${encodeURIComponent(query)}&key=${API_KEY}`);
+        const res = await fetch(url);
         const data = await res.json();
-        renderVideos(data.items, container);
-    } catch (e) { container.innerHTML = "API limit or error."; }
+        state.nextPageToken = data.nextPageToken || "";
+        renderGrid(data.items, append);
+    } catch (e) { console.error("API limit or error"); }
+    state.isFetching = false;
 }
 
-function renderVideos(items, container) {
-    container.innerHTML = "";
-    if(!items) return;
+function renderGrid(items, append) {
+    const container = document.getElementById("home-results");
+    if (!append) container.innerHTML = "";
     items.forEach(item => {
         if (!item.id.videoId) return;
         const card = document.createElement("div");
         card.className = "video-card";
         card.innerHTML = `<img src="${item.snippet.thumbnails.medium.url}"><div class="video-info"><strong>${item.snippet.title}</strong><small>${item.snippet.channelTitle}</small></div>`;
-        card.onclick = () => openWatch(item.id.videoId, item.snippet.title, item.snippet.channelTitle, item.snippet.thumbnails.medium.url);
+        card.onclick = () => openWatch(item.id.videoId, item.snippet.title, item.snippet.channelTitle, item.snippet.description);
         container.appendChild(card);
     });
 }
 
-function openWatch(id, title, channel, thumb) {
+// Infinite Scroll
+const scrollObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && state.nextPageToken && !state.isFetching && document.getElementById("home-view").style.display !== "none") {
+        fetchVideos(state.currentQuery, true);
+    }
+}, { threshold: 0.1 });
+scrollObserver.observe(document.getElementById("loading-trigger"));
+
+function openWatch(id, title, channel, desc) {
     document.getElementById("home-view").style.display = "none";
     document.getElementById("watch-view").style.display = "grid";
-    document.getElementById("zenBtn").style.display = "block";
     document.getElementById("mainPlayer").src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1`;
-    document.getElementById("nowPlayingTitle").innerText = title;
-    document.getElementById("nowPlayingChannel").innerText = channel;
+    document.getElementById("v-title").innerText = title;
+    document.getElementById("v-channel").innerText = channel;
+    document.getElementById("reading-mode-content").innerText = desc;
     
-    addToHistory(id, title, thumb);
-    updateStats(title, channel);
-    fetchVideos(title, "sidebar-results", true);
+    updateAlgorithm(title);
+    fetchSidebar(title.split(" ").slice(0, 2).join(" "));
     window.scrollTo(0,0);
 }
 
-function showHome() {
-    document.getElementById("home-view").style.display = "block";
-    document.getElementById("watch-view").style.display = "none";
-    document.getElementById("zenBtn").style.display = "none";
-    document.body.classList.remove('zen-mode');
-    document.getElementById("mainPlayer").src = "";
-    document.getElementById("feedTitle").innerText = "Your Intentional Feed";
-    // REFRESH FEED ON RETURN
-    loadFeed();
-}
-
-/* --- DATA & STATS --- */
-function updateStats(title, channel) {
-    title.toLowerCase().split(' ').forEach(w => { if(w.length > 3) state.interests[w] = (state.interests[w] || 0) + 1; });
-    state.channels[channel] = (state.channels[channel] || 0) + 1;
-    localStorage.setItem("interests", JSON.stringify(state.interests));
-    localStorage.setItem("channels", JSON.stringify(state.channels));
-}
-
-function addToHistory(id, title, thumb) {
-    state.history = state.history.filter(i => i.id !== id);
-    state.history.unshift({id, title, thumb});
-    if(state.history.length > 20) state.history.pop();
-    localStorage.setItem("watchHistory", JSON.stringify(state.history));
-}
-
-function showHistory() {
-    togglePanel('history-panel');
-    const list = document.getElementById('history-list');
-    list.innerHTML = "";
-    state.history.forEach(item => {
-        const div = document.createElement('div');
-        div.className = "history-item";
-        div.innerHTML = `<img src="${item.thumb}"><div><small>${item.title.substring(0,40)}...</small></div>`;
-        div.onclick = () => { openWatch(item.id, item.title, "", item.thumb); togglePanel('history-panel'); };
-        list.appendChild(div);
+async function fetchSidebar(q) {
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=8&q=${encodeURIComponent(q)}&key=${API_KEY}`);
+    const data = await res.json();
+    const side = document.getElementById("sidebar-results");
+    side.innerHTML = "";
+    data.items.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "video-card";
+        div.style.fontSize = "0.85rem";
+        div.innerHTML = `<img src="${item.snippet.thumbnails.medium.url}"><div class="video-info"><b>${item.snippet.title}</b></div>`;
+        div.onclick = () => openWatch(item.id.videoId, item.snippet.title, item.snippet.channelTitle, item.snippet.description);
+        side.appendChild(div);
     });
 }
 
-function clearHistory() { state.history = []; localStorage.setItem("watchHistory", "[]"); showHistory(); }
-
-/* --- ALGO --- */
-function updateAlgoPref() {
-    state.algo = document.getElementById("algoPref").value;
-    localStorage.setItem("algo", state.algo);
-    loadFeed();
-}
-
 function loadFeed() {
-    let q = "Intentional Living";
-    if (state.algo === "channels") q = Object.entries(state.channels).sort((a,b)=>b[1]-a[1])[0]?.[0] || q;
-    else if (state.algo === "keywords") q = Object.entries(state.interests).sort((a,b)=>b[1]-a[1]).slice(0,2).map(i=>i[0]).join(" ") || q;
-    else q = ["Science documentary", "Productivity", "Philosophy", "Artisan crafts"][Math.floor(Math.random()*4)];
-    
-    fetchVideos(q, "home-results");
+    let q = "Intentional Living Documentary";
+    const top = Object.entries(state.interests).sort((a,b)=>b[1]-a[1]).slice(0,2).map(i=>i[0]);
+    if (top.length) {
+        const mod = ["Analysis", "History", "Review", "Retrospective"][Math.floor(Math.random()*4)];
+        q = `${top.join(" ")} ${mod}`;
+    }
+    fetchVideos(q);
 }
 
 function handleSearch(e) {
     e.preventDefault();
     const q = document.getElementById("searchInput").value;
-    document.getElementById("feedTitle").innerText = `Search: ${q}`;
-    fetchVideos(q, "home-results");
+    document.getElementById("feedTitle").innerText = `Results: ${q}`;
+    fetchVideos(q);
 }
 
-function toggleZen() {
-    document.body.classList.toggle('zen-mode');
-    document.getElementById('zenBtn').innerText = document.body.classList.contains('zen-mode') ? "Exit Zen" : "Zen Mode";
+function showHome() {
+    document.getElementById("home-view").style.display = "block";
+    document.getElementById("watch-view").style.display = "none";
+    document.getElementById("mainPlayer").src = "";
+    loadFeed();
 }
 
-/* --- SESSION TIMER --- */
-setInterval(() => {
-    state.timeLeft--;
-    const mins = Math.floor(state.timeLeft / 60);
-    const secs = state.timeLeft % 60;
-    document.getElementById('timer-display').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-    if(state.timeLeft <= 0) { alert("Focus session complete. Take a break!"); state.timeLeft = 3600; showHome(); }
-}, 1000);
+function toggleReadingMode() {
+    const content = document.getElementById("reading-mode-content");
+    content.style.display = content.style.display === "block" ? "none" : "block";
+}
 
 /* --- INIT --- */
-document.getElementById('color-bg').value = state.theme.bg;
-document.getElementById('color-text').value = state.theme.text;
-document.getElementById('color-card').value = state.theme.card;
-document.getElementById('color-primary').value = state.theme.primary;
-document.getElementById('algoPref').value = state.algo;
-applyCustomTheme();
+document.getElementById('allow-learning').checked = state.learningEnabled;
+document.getElementById('c-bg').value = state.theme.bg;
+document.getElementById('c-text').value = state.theme.text;
+document.getElementById('c-card').value = state.theme.card;
+if (state.learningEnabled) document.getElementById("training-status").style.display = "flex";
+applyTheme();
 loadFeed();
 </script>
 </body>
