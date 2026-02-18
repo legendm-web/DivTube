@@ -19,22 +19,10 @@
 *{box-sizing:border-box;font-family:'Noto Sans',sans-serif;}
 body{margin:0;}
 
-[data-theme="light"]{
-  background:var(--bg-light);
-  color:var(--text-light);
-}
+[data-theme="light"]{background:var(--bg-light);color:var(--text-light);}
+[data-theme="dark"]{background:var(--bg-dark);color:var(--text-dark);}
 
-[data-theme="dark"]{
-  background:var(--bg-dark);
-  color:var(--text-dark);
-}
-
-header,section,footer{
-  max-width:1000px;
-  margin:auto;
-  padding:1rem;
-  text-align:center;
-}
+header{max-width:1000px;margin:auto;padding:1rem;text-align:center;}
 
 input{
   padding:0.6rem;
@@ -56,8 +44,6 @@ button{
   margin-left:0.5rem;
 }
 
-button:hover{opacity:0.9;}
-
 .iframe{
   display:none;
   aspect-ratio:16/9;
@@ -65,20 +51,14 @@ button:hover{opacity:0.9;}
   max-width:1000px;
 }
 
-iframe{
-  width:100%;
-  height:100%;
-  border:none;
-}
+iframe{width:100%;height:100%;border:none;}
 
 #results{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
   gap:1rem;
-  margin-top:2rem;
+  margin:2rem auto;
   max-width:1000px;
-  margin-left:auto;
-  margin-right:auto;
 }
 
 .video-card{
@@ -93,28 +73,11 @@ iframe{
   background:rgba(255,255,255,0.05);
 }
 
-.video-card:hover{
-  transform:scale(1.03);
-}
-
-.video-card img{
-  width:100%;
-  display:block;
-}
-
-.video-info{
-  padding:0.5rem;
-  text-align:left;
-}
-
-.video-info strong{
-  display:block;
-  font-size:0.9rem;
-}
-
-.video-info small{
-  opacity:0.7;
-}
+.video-card:hover{transform:scale(1.03);}
+.video-card img{width:100%;display:block;}
+.video-info{padding:0.5rem;text-align:left;}
+.video-info strong{display:block;font-size:0.9rem;}
+.video-info small{opacity:0.7;}
 
 .theme-toggle{
   position:absolute;
@@ -122,16 +85,7 @@ iframe{
   right:1rem;
 }
 
-@media(max-width:600px){
-  input{
-    width:100%;
-    margin-bottom:0.5rem;
-  }
-  button{
-    width:100%;
-    margin:0;
-  }
-}
+h2{text-align:center;margin-top:2rem;}
 </style>
 </head>
 
@@ -141,13 +95,15 @@ iframe{
 
 <header>
   <h1>Purify Video</h1>
-  <p>Intentional YouTube Search</p>
+  <p>Intentional YouTube</p>
 
   <form onsubmit="handleSearch(event)">
     <input id="searchInput" placeholder="Search YouTube..." required/>
     <button type="submit">Search</button>
   </form>
 </header>
+
+<h2 id="feedTitle">Recommended For You</h2>
 
 <div class="iframe">
   <iframe id="player" allowfullscreen></iframe>
@@ -158,81 +114,111 @@ iframe{
 <script>
 const API_KEY = "AIzaSyAsiXire2Ls6HrwkS7tIFNqkNi5xpySeCg";
 
-/* THEME */
+/* ---------------- THEME ---------------- */
 function setTheme(){
   const saved = localStorage.getItem("theme");
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   const theme = saved ? saved : (prefersDark ? "dark" : "light");
   document.documentElement.setAttribute("data-theme", theme);
 }
-
 function toggleTheme(){
   const current = document.documentElement.getAttribute("data-theme");
   const newTheme = current === "dark" ? "light" : "dark";
   document.documentElement.setAttribute("data-theme", newTheme);
   localStorage.setItem("theme", newTheme);
 }
-
 setTheme();
 
-/* SEARCH */
+/* ---------------- SEARCH ---------------- */
 async function searchVideos(query){
   const results = document.getElementById("results");
-  results.innerHTML = "Searching...";
+  results.innerHTML = "Loading...";
 
-  try{
-    const res = await fetch(
-      `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${encodeURIComponent(query)}&key=${API_KEY}`
-    );
-
-    const data = await res.json();
-    results.innerHTML = "";
-
-    if(!data.items || data.items.length === 0){
-      results.innerHTML = "No results found.";
-      return;
-    }
-
-    data.items.forEach(item=>{
-      const videoId = item.id.videoId;
-      const title = item.snippet.title;
-      const channel = item.snippet.channelTitle;
-      const thumb = item.snippet.thumbnails.medium.url;
-
-      const card = document.createElement("div");
-      card.className = "video-card";
-      card.innerHTML = `
-        <img src="${thumb}">
-        <div class="video-info">
-          <strong>${title}</strong>
-          <small>${channel}</small>
-        </div>
-      `;
-
-      card.onclick = ()=>loadVideo(videoId);
-      results.appendChild(card);
-    });
-
-  }catch(err){
-    console.error(err);
-    results.innerHTML = "Search failed. Check console.";
-  }
+  const res = await fetch(
+    `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${encodeURIComponent(query)}&key=${API_KEY}`
+  );
+  const data = await res.json();
+  renderVideos(data.items);
 }
 
-/* PLAYER */
-function loadVideo(videoId){
+/* ---------------- RENDER ---------------- */
+function renderVideos(items){
+  const results = document.getElementById("results");
+  results.innerHTML = "";
+
+  items.forEach(item=>{
+    const videoId = item.id.videoId;
+    const title = item.snippet.title;
+    const channel = item.snippet.channelTitle;
+    const thumb = item.snippet.thumbnails.medium.url;
+
+    const card = document.createElement("div");
+    card.className = "video-card";
+    card.innerHTML = `
+      <img src="${thumb}">
+      <div class="video-info">
+        <strong>${title}</strong>
+        <small>${channel}</small>
+      </div>
+    `;
+    card.onclick = ()=>loadVideo(videoId, title);
+    results.appendChild(card);
+  });
+}
+
+/* ---------------- PLAYER + TRACKING ---------------- */
+function loadVideo(videoId, title){
   const player = document.getElementById("player");
   player.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`;
   document.querySelector(".iframe").style.display = "block";
   window.scrollTo({top:0,behavior:"smooth"});
+  updateInterests(title);
 }
 
-/* FORM */
-function handleSearch(event){
-  event.preventDefault();
-  const query = document.getElementById("searchInput").value.trim();
-  if(query) searchVideos(query);
+/* ---------------- SMART RECOMMENDER ---------------- */
+function updateInterests(title){
+  let interests = JSON.parse(localStorage.getItem("interests")) || {};
+  const words = title.toLowerCase().split(" ");
+
+  words.forEach(word=>{
+    if(word.length > 3){
+      interests[word] = (interests[word] || 0) + 1;
+    }
+  });
+
+  localStorage.setItem("interests", JSON.stringify(interests));
 }
+
+function getTopKeywords(){
+  let interests = JSON.parse(localStorage.getItem("interests")) || {};
+  return Object.entries(interests)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,3)
+    .map(entry=>entry[0])
+    .join(" ");
+}
+
+async function loadHomepageFeed(){
+  const keywords = getTopKeywords();
+  if(keywords){
+    searchVideos(keywords);
+  }else{
+    searchVideos("popular technology documentary");
+  }
+}
+
+/* ---------------- FORM ---------------- */
+function handleSearch(e){
+  e.preventDefault();
+  const query = document.getElementById("searchInput").value.trim();
+  if(query){
+    document.getElementById("feedTitle").innerText = "Search Results";
+    searchVideos(query);
+  }
+}
+
+/* ---------------- INIT ---------------- */
+loadHomepageFeed();
 </script>
 
 </body>
