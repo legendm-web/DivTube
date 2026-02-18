@@ -19,7 +19,7 @@
 [data-theme="light"]{background:var(--bg-light);color:var(--text-light);}
 *{box-sizing:border-box;font-family:'Noto Sans',sans-serif;}
 body{margin:0;}
-header,section,footer{max-width:1000px;margin:auto;padding:1rem;text-align:center;}
+header,section,footer{max-width:1100px;margin:auto;padding:1rem;text-align:center;}
 
 input{
   padding:0.6rem;
@@ -69,13 +69,9 @@ iframe{
 [data-theme="dark"] .video-card{
   background:rgba(255,255,255,0.05);
 }
-.video-card:hover{
-  transform:scale(1.03);
-}
-.video-card img{
-  width:100%;
-  display:block;
-}
+.video-card:hover{transform:scale(1.03);}
+.video-card img{width:100%;display:block;}
+
 .video-info{
   padding:0.5rem;
   text-align:left;
@@ -86,6 +82,7 @@ iframe{
 }
 .video-info small{
   opacity:0.7;
+  display:block;
 }
 
 .theme-toggle{
@@ -100,9 +97,125 @@ iframe{
 </style>
 
 <script>
-const API_KEY = "AIzaSyDJgUos6WAuXBlcuTGT2BR1_n0C5W0qDiI";
+const API_KEY = "AIzaSyAsiXire2Ls6HrwkS7tIFNqkNi5xpySeCg";
 
 function setTheme(){
   const saved = localStorage.getItem("theme");
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const theme = saved
+  const theme = saved || (prefersDark ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", theme);
+}
+function toggleTheme(){
+  const current=document.documentElement.getAttribute("data-theme");
+  const newTheme=current==="dark"?"light":"dark";
+  document.documentElement.setAttribute("data-theme", newTheme);
+  localStorage.setItem("theme", newTheme);
+}
+
+function loadVideo(videoId){
+  document.querySelector(".iframe").style.display="block";
+  document.querySelector("iframe").src=
+    "https://www.youtube-nocookie.com/embed/"+videoId;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function formatDuration(duration){
+  const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+  const hours = (match[1]||"").replace("H","");
+  const minutes = (match[2]||"").replace("M","");
+  const seconds = (match[3]||"").replace("S","");
+  return [
+    hours,
+    minutes.padStart(2,'0'),
+    seconds.padStart(2,'0')
+  ].filter(Boolean).join(":");
+}
+
+async function searchVideos(query){
+  const results=document.getElementById("results");
+  results.innerHTML="Searching...";
+
+  try{
+    // Step 1: search
+    const searchRes=await fetch(
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${encodeURIComponent(query)}&key=${API_KEY}`
+    );
+    const searchData=await searchRes.json();
+
+    const ids=searchData.items.map(item=>item.id.videoId).join(",");
+
+    // Step 2: get statistics + duration
+    const videoRes=await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${ids}&key=${API_KEY}`
+    );
+    const videoData=await videoRes.json();
+
+    const videoMap={};
+    videoData.items.forEach(v=>{
+      videoMap[v.id]=v;
+    });
+
+    results.innerHTML="";
+
+    searchData.items.forEach(item=>{
+      const videoId=item.id.videoId;
+      const title=item.snippet.title;
+      const channel=item.snippet.channelTitle;
+      const thumb=item.snippet.thumbnails.medium.url;
+
+      const stats=videoMap[videoId];
+      const views=stats?.statistics?.viewCount || 0;
+      const duration=formatDuration(stats?.contentDetails?.duration || "PT0S");
+
+      const card=document.createElement("div");
+      card.className="video-card";
+      card.innerHTML=`
+        <img src="${thumb}">
+        <div class="video-info">
+          <strong>${title}</strong>
+          <small>${channel}</small>
+          <small>${Number(views).toLocaleString()} views • ${duration}</small>
+        </div>
+      `;
+      card.onclick=()=>loadVideo(videoId);
+      results.appendChild(card);
+    });
+
+  }catch(err){
+    results.innerHTML="Search failed.";
+    console.error(err);
+  }
+}
+
+function handleSearch(e){
+  e.preventDefault();
+  const q=document.getElementById("searchInput").value.trim();
+  if(q) searchVideos(q);
+}
+
+function handlePurify(e){
+  e.preventDefault();
+  const urlInput=document.getElementById("urlInput").value.trim();
+  if(!urlInput)return;
+  try{
+    const url=new URL(urlInput);
+    let videoId="";
+    if(url.hostname.includes("youtube.com")){
+      videoId=url.searchParams.get("v");
+    }else if(url.hostname.includes("youtu.be")){
+      videoId=url.pathname.substring(1);
+    }
+    if(videoId) loadVideo(videoId);
+  }catch{
+    alert("Invalid YouTube URL");
+  }
+}
+
+window.onload=setTheme;
+</script>
+</head>
+
+<body>
+
+<div class="theme-toggle">
+<button onclick
