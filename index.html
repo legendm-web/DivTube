@@ -2,105 +2,89 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <title>DivTube Sovereign v17.0</title>
+    <title>DivTube Sovereign v20.0</title>
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #010204; --sidebar: #06080c; --card: #0c0f16;
             --primary: #8b5cf6; --text: #f1f5f9; --border: rgba(255,255,255,0.06);
-            --accent: #10b981; --warn: #ef4444; --reason: #3b82f6;
+            --accent: #10b981; --warn: #ef4444;
         }
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: 0.2s; scrollbar-width: thin; scrollbar-color: #333 transparent; }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: 0.2s; }
         body { margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
         
-        aside { width: 280px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 1.5rem; display: flex; flex-direction: column; z-index: 100; }
+        aside { width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 1.5rem; display: flex; flex-direction: column; z-index: 100; }
         .logo { font-weight: 900; font-size: 1.8rem; color: var(--primary); letter-spacing: -2px; cursor: pointer; margin-bottom: 2rem; }
-        .nav-item { padding: 12px; border-radius: 12px; cursor: pointer; color: rgba(255,255,255,0.4); font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; font-size: 0.9rem; }
-        .nav-item:hover { background: rgba(255,255,255,0.03); color: white; }
+        .nav-item { padding: 12px; border-radius: 12px; cursor: pointer; color: rgba(255,255,255,0.4); font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; text-decoration: none; font-size: 0.9rem; }
         .nav-item.active { background: rgba(139, 92, 246, 0.15); color: var(--primary); border: 1px solid rgba(139, 92, 246, 0.2); }
 
-        main { flex: 1; overflow-y: auto; background: radial-gradient(circle at top right, #0d1117, #010204); position: relative; }
-        .page { display: none; padding: 2rem; max-width: 1600px; margin: 0 auto; animation: fadeIn 0.3s ease; }
-        .active-page { display: block; }
+        main { flex: 1; overflow-y: auto; background: radial-gradient(circle at top right, #0d1117, #010204); }
+        .view { display: none; padding: 2rem; max-width: 1400px; margin: 0 auto; animation: fadeIn 0.3s ease; }
+        .active-view { display: block; }
 
-        /* THEATER: BIGGER PLAYER */
-        #page-watch { padding: 0; max-width: 100%; height: 100vh; background: #000; }
-        .theater-viewport { width: 100%; height: 82vh; background: #000; position: relative; }
-        .theater-viewport iframe { width: 100%; height: 100%; border: none; }
-        .watch-details { padding: 2rem 4rem; display: flex; justify-content: space-between; align-items: center; }
-
-        /* NEURAL MAP */
-        #map-container { width: 100%; height: 500px; background: #000; border-radius: 24px; border: 1px solid var(--border); margin-top: 1rem; overflow: hidden; position: relative; }
-        .node { stroke: #fff; stroke-width: 1.5px; }
-        .link { stroke: var(--primary); stroke-opacity: 0.2; }
-
-        /* GRID */
-        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem; padding-top: 2rem; }
+        /* Theater */
+        #view-watch { padding: 0; max-width: 100%; height: 100vh; background: #000; }
+        .theater-frame { width: 100%; height: 80vh; border: none; }
+        
+        /* History & List Styles */
+        .history-item { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 20px; margin-bottom: 10px; }
+        .history-item img { width: 120px; border-radius: 8px; }
+        .history-info { flex: 1; }
+        .remove-btn { background: none; border: 1px solid var(--warn); color: var(--warn); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 800; }
+        
+        .blank-node-btn { background: #1a1a1a; color: #fff; border: 1px solid #333; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 12px; margin-top: 10px; width: 100%; }
+        
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem; }
         .card { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; position: relative; }
         .card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
-        .reason-tag { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.85); color: var(--reason); font-size: 10px; font-weight: 900; padding: 4px 12px; border-radius: 50px; border: 1px solid var(--reason); backdrop-filter: blur(4px); }
 
-        #ai-status { position: fixed; bottom: 20px; right: 20px; background: #000; padding: 8px 18px; border-radius: 50px; border: 1px solid var(--border); font-family: 'JetBrains Mono'; font-size: 10px; color: var(--accent); z-index: 2000; pointer-events: none; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <aside>
-    <div class="logo" onclick="nav('home')">DivTube</div>
-    <div id="account-pill-container" style="margin-bottom: 2rem;"></div>
-
-    <div class="nav-item active" id="nav-home" onclick="nav('home')">📡 Neural Feed</div>
-    <div class="nav-item" id="nav-map" onclick="nav('map')">🧠 Neural Map</div>
-    <div class="nav-item" id="nav-settings" onclick="nav('settings')">⚙️ AI Core</div>
-
-    <div style="margin-top:auto; padding:15px; background:rgba(255,255,255,0.02); border-radius:18px; border: 1px solid var(--border);">
-        <div style="font-size:10px; font-weight:900; color:#555; margin-bottom:10px; letter-spacing:1px;">ACTIVE FILTERS</div>
-        <div id="filter-list" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
+    <div class="logo" onclick="app.nav('/home')">DivTube</div>
+    <nav>
+        <div class="nav-item" id="link-home" onclick="app.nav('/home')">📡 Neural Feed</div>
+        <div class="nav-item" id="link-history" onclick="app.nav('/history')">📜 History</div>
+        <div class="nav-item" id="link-settings" onclick="app.nav('/settings')">⚙️ AI Core</div>
+    </nav>
+    
+    <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border);">
+        <button class="blank-node-btn" onclick="app.openBlank()">+ Spawn Blank Node</button>
     </div>
 </aside>
 
-<div id="ai-status">NEURAL_INIT...</div>
-
 <main>
-    <div id="page-home" class="page active-page">
-        <input type="text" id="searchBox" placeholder="Inject Global Intent..." style="width:100%; background:rgba(255,255,255,0.03); border:1px solid var(--border); color:white; padding:22px 35px; border-radius:100px; font-size:1.1rem; outline:none; margin-bottom: 1rem;" onkeydown="if(event.key==='Enter') runAISearch()">
+    <section id="view-home" class="view">
+        <input type="text" id="searchBox" placeholder="Inject Search Intent..." style="width:100%; background:rgba(255,255,255,0.03); border:1px solid var(--border); color:white; padding:20px 30px; border-radius:100px; font-size:1.1rem; outline:none; margin-bottom: 2rem;" onkeydown="if(event.key==='Enter') app.search()">
         <div id="grid" class="video-grid"></div>
-    </div>
+    </section>
 
-    <div id="page-map" class="page">
-        <h1 style="font-weight:900; font-size:2.5rem; margin:0;">Neural Topology</h1>
-        <p style="color:#666; margin-bottom:2rem;">Visualization of the Python engine's current decision-making weights.</p>
-        <div id="map-container"></div>
-    </div>
-
-    <div id="page-settings" class="page">
-        <h1 style="font-weight:900; font-size:2.5rem; margin:0;">AI Core Parameters</h1>
-        <div style="margin-top:3rem; max-width: 600px; display:flex; flex-direction:column; gap:2rem;">
-            <div>
-                <label style="font-size:11px; font-weight:900; color:var(--primary); display:block; margin-bottom:10px;">YOUTUBE_API_KEY</label>
-                <input type="password" id="ytKey" placeholder="Paste your API key here..." style="width:100%; background:#000; border:1px solid var(--border); color:white; padding:15px; border-radius:12px;">
-            </div>
-            <div>
-                <label style="font-size:11px; font-weight:900; color:var(--warn); display:block; margin-bottom:10px;">DANGER ZONE</label>
-                <button onclick="clearBrain()" style="background:rgba(239, 68, 68, 0.1); border:1px solid var(--warn); color:var(--warn); padding:12px 25px; border-radius:12px; font-weight:800; cursor:pointer;">PURGE BRAIN WEIGHTS</button>
-            </div>
-            <button onclick="saveCore()" style="background:var(--primary); color:white; border:none; padding:18px; border-radius:15px; font-weight:900; font-size:1rem; cursor:pointer; box-shadow: 0 10px 30px rgba(139,92,246,0.3);">SYNC & REBOOT ENGINE</button>
+    <section id="view-watch" class="view">
+        <div id="theater-mount"></div>
+        <div style="padding: 2rem 4rem; display: flex; justify-content: space-between; align-items: center;">
+            <h1 id="t-title" style="margin:0; font-size:2rem; font-weight:900;"></h1>
+            <button onclick="app.nav('/home')" style="background:var(--primary); color:white; border:none; padding:12px 30px; border-radius:10px; cursor:pointer; font-weight:800;">EXIT</button>
         </div>
-    </div>
+    </section>
 
-    <div id="page-watch" class="page">
-        <div class="theater-viewport" id="theater-mount"></div>
-        <div class="watch-details">
-            <div style="max-width:70%;">
-                <h1 id="t-title" style="margin:0; font-size:2rem; font-weight:900; letter-spacing:-1px;"></h1>
-                <button onclick="nav('home')" style="background:none; border:none; color:var(--primary); padding:10px 0; cursor:pointer; font-weight:900; font-size:1rem;">← BACK TO NEURAL FEED</button>
-            </div>
-            <button id="train-btn" onclick="aiLearn()" style="background:white; color:black; border:none; padding:18px 40px; border-radius:12px; font-weight:900; cursor:pointer;">TRAIN NEURAL PATH</button>
+    <section id="view-history" class="view">
+        <h1 style="font-weight:900; font-size:2.5rem;">Neural History</h1>
+        <p style="color:#555; margin-bottom:2rem;">Manage your training data. Deleting an item removes its influence from the Python AI.</p>
+        <div id="history-list"></div>
+    </section>
+
+    <section id="view-settings" class="view">
+        <h1 style="font-weight:900; font-size:2.5rem;">AI Settings</h1>
+        <div style="max-width: 600px; margin-top: 2rem;">
+            <label style="font-size:10px; font-weight:900; color:var(--primary);">YOUTUBE_API_KEY</label>
+            <input type="password" id="ytKey" style="width:100%; background:#000; border:1px solid var(--border); color:white; padding:15px; border-radius:12px; margin:10px 0 20px 0;">
+            <button onclick="app.saveKey()" style="background:var(--primary); color:white; border:none; padding:15px; border-radius:12px; font-weight:800; cursor:pointer; width:100%;">SYNC ENGINE</button>
         </div>
-    </div>
+    </section>
 </main>
 
 <script type="py">
@@ -112,127 +96,109 @@ class SovereignAI:
         candidates = json.loads(candidates_json)
         brain = json.loads(brain_json)
         weights = brain.get("weights", {})
-        locks = [l.lower() for l in brain.get("locks", [])]
         
-        ranked = []
         for v in candidates:
-            score = weights.get(v['channelId'], {}).get('points', 1.0)
-            reason = "Exploration"
+            v['score'] = weights.get(v['channelId'], {"points": 1.0})['points']
+            v['reason'] = f"W_Score: {v['score']:.1f}"
             
-            # Match Logic
-            for lock in locks:
-                if lock in v['title'].lower():
-                    score *= 10.0
-                    reason = f"Lock: {lock}"
-            
-            v['score'] = score
-            v['reason'] = reason
-            ranked.append(v)
-            
-        ranked.sort(key=lambda x: x['score'], reverse=True)
-        return json.dumps(ranked)
+        candidates.sort(key=lambda x: x['score'], reverse=True)
+        return json.dumps(candidates)
 
 engine = SovereignAI()
 window.pyRanker = engine.rank
-window.document.getElementById("ai-status").innerText = "NEURAL_ENGINE_READY"
 </script>
 
 <script>
-let currentUser = localStorage.getItem('div_user_active') || 'Main';
-let db = {};
-let lastResults = [];
+const app = {
+    db: JSON.parse(localStorage.getItem('div_v20')) || { key: "", history: [], brain: { weights: {} } },
 
-function boot() {
-    const raw = localStorage.getItem(`div_brain_${currentUser}`);
-    db = raw ? JSON.parse(raw) : { vault: { key: "" }, brain: { weights: {}, locks: ["AI", "Tech", "Science"] } };
-    document.getElementById('ytKey').value = db.vault.key;
-    renderUI();
-}
+    init() {
+        document.getElementById('ytKey').value = this.db.key;
+        window.onpopstate = () => this.route();
+        this.route();
+    },
 
-function renderUI() {
-    const fList = document.getElementById('filter-list');
-    fList.innerHTML = "";
-    db.brain.locks.forEach(l => {
-        const s = document.createElement('span');
-        s.style = "background:rgba(139,92,246,0.1); color:var(--primary); border:1px solid var(--primary); padding:3px 10px; border-radius:50px; font-size:10px; font-weight:900;";
-        s.innerText = l;
-        fList.appendChild(s);
-    });
-}
+    nav(path) {
+        window.history.pushState({}, "", path);
+        this.route();
+    },
 
-async function runAISearch() {
-    document.getElementById('ai-status').innerText = "INFERENCE_RUNNING...";
-    const q = document.getElementById('searchBox').value;
-    const r = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}&maxResults=30&type=video&key=${db.vault.key}`);
-    const d = await r.json();
-    
-    const raw = d.items.map(i => ({ id: i.id.videoId, channelId: i.snippet.channelId, title: i.snippet.title, thumb: i.snippet.thumbnails.high.url }));
-    lastResults = JSON.parse(window.pyRanker(JSON.stringify(raw), JSON.stringify(db.brain)));
-    
-    const grid = document.getElementById('grid'); grid.innerHTML = "";
-    lastResults.forEach(v => {
-        const c = document.createElement('div'); c.className = 'card';
-        c.innerHTML = `<div class="reason-tag">🧠 ${v.reason}</div><img src="${v.thumb}"><div style="padding:18px; font-weight:800; font-size:0.95rem;">${v.title}</div>`;
-        c.onclick = () => openTheater(v);
-        grid.appendChild(c);
-    });
-    
-    if(document.getElementById('page-map').classList.contains('active-page')) renderMap();
-    document.getElementById('ai-status').innerText = "NEURAL_ENGINE_READY";
-}
+    route() {
+        const path = window.location.pathname === '/' ? '/home' : window.location.pathname;
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active-view'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        
+        const target = document.getElementById(`view-${path.replace('/', '')}`);
+        if(target) target.classList.add('active-view');
+        
+        const link = document.getElementById(`link-${path.replace('/', '')}`);
+        if(link) link.classList.add('active');
 
-function renderMap() {
-    const container = document.getElementById('map-container');
-    container.innerHTML = "";
-    const width = container.clientWidth, height = container.clientHeight;
-    
-    const nodes = [{id: "BRAIN", size: 20, color: "var(--primary)"}];
-    const links = [];
-    
-    lastResults.slice(0, 12).forEach(v => {
-        nodes.push({id: v.title.substring(0, 20), size: 5, color: "#fff"});
-        links.push({source: "BRAIN", target: v.title.substring(0, 20)});
-    });
+        if(path === '/history') this.renderHistory();
+        if(path !== '/watch') document.getElementById('theater-mount').innerHTML = "";
+    },
 
-    const svg = d3.select("#map-container").append("svg").attr("width", width).attr("height", height);
-    const simulation = d3.forceSimulation(nodes)
-        .force("link", d3.forceLink(links).id(d => d.id).distance(150))
-        .force("charge", d3.forceManyBody().strength(-300))
-        .force("center", d3.forceCenter(width / 2, height / 2));
+    async search() {
+        const q = document.getElementById('searchBox').value;
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}&maxResults=15&type=video&key=${this.db.key}`);
+        const data = await res.json();
+        const raw = data.items.map(i => ({ id: i.id.videoId, channelId: i.snippet.channelId, title: i.snippet.title, thumb: i.snippet.thumbnails.high.url }));
+        const ranked = JSON.parse(window.pyRanker(JSON.stringify(raw), JSON.stringify(this.db.brain)));
+        
+        const grid = document.getElementById('grid'); grid.innerHTML = "";
+        ranked.forEach(v => {
+            const c = document.createElement('div'); c.className = 'card';
+            c.innerHTML = `<img src="${v.thumb}"><div style="padding:15px; font-weight:800;">${v.title}</div>`;
+            c.onclick = () => this.play(v);
+            grid.appendChild(c);
+        });
+    },
 
-    const link = svg.append("g").selectAll("line").data(links).enter().append("line").attr("class", "link");
-    const node = svg.append("g").selectAll("circle").data(nodes).enter().append("circle")
-        .attr("r", d => d.size).attr("fill", d => d.color).call(d3.drag().on("start", dragstart).on("drag", dragged).on("end", dragend));
+    play(v) {
+        this.nav('/watch');
+        document.getElementById('theater-mount').innerHTML = `<iframe class="theater-frame" src="https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1" allowfullscreen></iframe>`;
+        document.getElementById('t-title').innerText = v.title;
+        
+        // Add to history
+        this.db.history.unshift({...v, timestamp: Date.now()});
+        if(!this.db.brain.weights[v.channelId]) this.db.brain.weights[v.channelId] = { points: 1.0 };
+        this.db.brain.weights[v.channelId].points += 0.5;
+        this.save();
+    },
 
-    simulation.on("tick", () => {
-        link.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
-        node.attr("cx", d => d.x).attr("cy", d => d.y);
-    });
+    renderHistory() {
+        const container = document.getElementById('history-list');
+        container.innerHTML = "";
+        this.db.history.forEach((v, index) => {
+            const h = document.createElement('div'); h.className = 'history-item';
+            h.innerHTML = `
+                <img src="${v.thumb}">
+                <div class="history-info">
+                    <div style="font-weight:800;">${v.title}</div>
+                    <div style="font-size:12px; color:#555;">Watched: ${new Date(v.timestamp).toLocaleDateString()}</div>
+                </div>
+                <button class="remove-btn" onclick="app.removeHistory(${index}, '${v.channelId}')">PURGE</button>
+            `;
+            container.appendChild(h);
+        });
+    },
 
-    function dragstart(event) { if (!event.active) simulation.alphaTarget(0.3).restart(); event.subject.fx = event.subject.x; event.subject.fy = event.subject.y; }
-    function dragged(event) { event.subject.fx = event.x; event.subject.fy = event.y; }
-    function dragend(event) { if (!event.active) simulation.alphaTarget(0); event.subject.fx = null; event.subject.fy = null; }
-}
+    removeHistory(index, cid) {
+        this.db.history.splice(index, 1);
+        if(this.db.brain.weights[cid]) this.db.brain.weights[cid].points -= 0.5; // Reverse training
+        this.save(); this.renderHistory();
+    },
 
-function openTheater(v) {
-    nav('watch');
-    document.getElementById('theater-mount').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&modestbranding=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-    document.getElementById('t-title').innerText = v.title;
-}
+    openBlank() {
+        const win = window.open('about:blank', '_blank');
+        win.document.write('<html><body style="background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-family:sans-serif;"><h1>DivTube Blank Node</h1></body></html>');
+    },
 
-function nav(p) {
-    document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active-page'));
-    document.querySelectorAll('.nav-item').forEach(ni => ni.classList.remove('active'));
-    document.getElementById(`page-${p}`).classList.add('active-page');
-    if(document.getElementById(`nav-${p}`)) document.getElementById(`nav-${p}`).classList.add('active');
-    if(p === 'map') renderMap();
-    if(p !== 'watch') document.getElementById('theater-mount').innerHTML = "";
-}
+    saveKey() { this.db.key = document.getElementById('ytKey').value; this.save(); location.reload(); },
+    save() { localStorage.setItem('div_v20', JSON.stringify(this.db)); }
+};
 
-function saveCore() { db.vault.key = document.getElementById('ytKey').value; save(); location.reload(); }
-function clearBrain() { if(confirm("Purge all neural history?")) { db.brain.weights = {}; save(); location.reload(); } }
-function save() { localStorage.setItem(`div_brain_${currentUser}`, JSON.stringify(db)); }
-boot();
+app.init();
 </script>
 </body>
 </html>
