@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <title>DivTube Sovereign v29.0</title>
+    <title>DivTube Sovereign v30.0</title>
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -16,69 +16,70 @@
         
         aside { width: 240px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 1.5rem; display: flex; flex-direction: column; flex-shrink: 0; }
         .logo { font-weight: 900; font-size: 1.8rem; color: var(--primary); letter-spacing: -2px; cursor: pointer; margin-bottom: 2rem; }
-        .nav-item { padding: 12px; border-radius: 12px; cursor: pointer; color: rgba(255,255,255,0.4); font-weight: 700; margin-bottom: 5px; }
+        .nav-item { padding: 12px; border-radius: 12px; cursor: pointer; color: rgba(255,255,255,0.4); font-weight: 700; margin-bottom: 5px; text-decoration: none; display: block; }
         .nav-item.active { background: rgba(139, 92, 246, 0.1); color: var(--primary); }
 
-        main { flex: 1; overflow-y: auto; background: radial-gradient(circle at top right, #0d1117, #010204); }
+        main { flex: 1; overflow-y: auto; background: radial-gradient(circle at top right, #0d1117, #010204); position: relative; }
         .view { display: none; padding: 2rem; animation: fadeIn 0.3s ease; }
         .active-view { display: block; }
 
-        /* Grid & 16:9 Constraints */
+        /* Strict 16:9 Grid */
         .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
-        .card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
-        .thumb-wrap { width: 100%; aspect-ratio: 16/9; overflow: hidden; position: relative; cursor: pointer; }
+        .card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); transition: 0.2s; }
+        .card:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .thumb-wrap { width: 100%; aspect-ratio: 16/9; overflow: hidden; position: relative; cursor: pointer; background: #000; }
         .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Watch Page Layout */
-        .watch-container { display: flex; gap: 2rem; padding: 1rem; max-width: 1600px; margin: 0 auto; }
-        .video-player-side { flex: 3; }
-        .rec-sidebar { flex: 1; display: flex; flex-direction: column; gap: 1rem; max-height: 85vh; overflow-y: auto; padding-right: 10px; }
-        .rec-card { display: flex; gap: 10px; background: var(--card); padding: 8px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
-        .rec-card:hover { border-color: var(--primary); }
-        .rec-thumb { width: 140px; aspect-ratio: 16/9; border-radius: 4px; object-fit: cover; }
+        /* Watch Page Cinema */
+        .watch-layout { display: flex; gap: 2rem; max-width: 1600px; margin: 0 auto; }
+        .player-block { flex: 3; }
+        .rec-block { flex: 1; display: flex; flex-direction: column; gap: 1rem; max-height: 85vh; overflow-y: auto; padding-right: 10px; }
+        .rec-item { display: flex; gap: 12px; background: var(--card); padding: 10px; border-radius: 10px; cursor: pointer; border: 1px solid transparent; }
+        .rec-item:hover { border-color: var(--primary); }
+        .rec-thumb { width: 140px; aspect-ratio: 16/9; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
 
-        /* Modal / Channel View */
-        #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: none; z-index: 10000; align-items: center; justify-content: center; }
-        #modal-content { background: var(--bg); width: 90%; max-width: 1000px; border-radius: 20px; border: 1px solid var(--border); padding: 2rem; max-height: 85vh; display: flex; flex-direction: column; }
-        #m-vids-container { overflow-y: auto; flex: 1; margin-top: 20px; padding-right: 10px; }
+        /* Modal fixes */
+        #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(10px); display: none; z-index: 10000; align-items: center; justify-content: center; }
+        #modal-content { background: var(--bg); width: 95%; max-width: 1100px; border-radius: 24px; border: 1px solid var(--border); padding: 2.5rem; max-height: 90vh; display: flex; flex-direction: column; }
+        #m-vids-scroll { overflow-y: auto; flex: 1; margin-top: 20px; padding-right: 15px; }
         
-        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--primary); }
-        .btn { padding: 8px 16px; border-radius: 6px; border: none; font-weight: 800; cursor: pointer; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--primary); font-size: 1.2rem; }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div id="boot-screen">INITIALIZING_ENGINE...</div>
+<div id="boot-screen">INITIALIZING_SOVEREIGN_V30...</div>
 
 <aside>
     <div class="logo" onclick="app.nav('/home')">DivTube</div>
-    <div class="nav-item active" id="link-home" onclick="app.nav('/home')">📡 Feed</div>
-    <div class="nav-item" id="link-settings" onclick="app.nav('/settings')">⚙️ Core</div>
+    <a class="nav-item" id="link-home" onclick="app.nav('/home')">📡 Neural Feed</a>
+    <a class="nav-item" id="link-settings" onclick="app.nav('/settings')">⚙️ AI Core</a>
 </aside>
 
 <main>
-    <section id="view-home" class="view active-view">
-        <input type="text" id="searchBox" placeholder="Search..." style="width:100%; background:#0c0f16; border:1px solid var(--border); color:white; padding:15px; border-radius:8px; margin-bottom:2rem;" onkeydown="if(event.key==='Enter') app.search()">
+    <section id="view-home" class="view">
+        <input type="text" id="searchBox" placeholder="Inject Search Intent..." style="width:100%; background:rgba(255,255,255,0.03); border:1px solid var(--border); color:white; padding:18px; border-radius:12px; margin-bottom:2rem; outline:none;" onkeydown="if(event.key==='Enter') app.search()">
         <div id="grid" class="video-grid"></div>
     </section>
 
-    <section id="view-watch" class="view" style="padding: 0;">
-        <div class="watch-container">
-            <div class="video-player-side">
-                <div id="theater-mount" style="width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden;"></div>
-                <h2 id="t-title" style="margin-top:20px;"></h2>
+    <section id="view-watch" class="view">
+        <div class="watch-layout">
+            <div class="player-block">
+                <div id="theater-mount" style="width:100%; aspect-ratio:16/9; background:#000; border-radius:16px; overflow:hidden;"></div>
+                <h2 id="t-title" style="margin-top:20px; font-size:1.8rem; font-weight:900;"></h2>
             </div>
-            <div class="rec-sidebar" id="rec-sidebar">
-                </div>
+            <div class="rec-block" id="rec-sidebar"></div>
         </div>
     </section>
 
     <section id="view-settings" class="view">
-        <div style="max-width:400px; background:var(--card); padding:2rem; border-radius:12px;">
-            <label>API KEY</label>
-            <input type="password" id="ytKey" style="width:100%; margin:10px 0; padding:10px; background:#000; border:1px solid var(--border); color:white;">
-            <button class="btn" style="background:var(--primary); color:white; width:100%;" onclick="app.saveKey()">SAVE</button>
+        <h1 style="font-weight:900; font-size:2.5rem;">Core Config</h1>
+        <div style="max-width:450px; background:var(--card); padding:2rem; border-radius:20px; border:1px solid var(--border);">
+            <label style="font-size:11px; font-weight:900; color:var(--primary);">YOUTUBE_API_KEY</label>
+            <input type="password" id="ytKey" style="width:100%; margin:15px 0; padding:15px; background:#000; border:1px solid var(--border); color:white; border-radius:10px;">
+            <button class="btn" style="background:var(--primary); color:white; width:100%;" onclick="app.saveKey()">REBOOT SYSTEM</button>
         </div>
     </section>
 </main>
@@ -86,11 +87,11 @@
 <div id="modal-overlay" onclick="app.closeModal()">
     <div id="modal-content" onclick="event.stopPropagation()">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 id="m-title" style="margin:0;"></h2>
+            <h2 id="m-title" style="margin:0; font-size:2rem; font-weight:900;"></h2>
             <div id="m-sub-area"></div>
         </div>
-        <div id="m-vids-container">
-            <div id="m-vids" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:20px;"></div>
+        <div id="m-vids-scroll">
+            <div id="m-vids" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:20px;"></div>
         </div>
     </div>
 </div>
@@ -106,7 +107,7 @@ class SovereignAI:
         subs = brain.get("subs", [])
         for v in pool:
             v['isSubbed'] = v['channelId'] in subs
-            v['score'] = 100 if v['isSubbed'] else 1
+            v['score'] = 1000 if v['isSubbed'] else 1
         pool.sort(key=lambda x: x['score'], reverse=True)
         return json.dumps(pool)
 
@@ -117,7 +118,9 @@ window.app.onEngineReady()
 
 <script>
 const app = {
-    db: JSON.parse(localStorage.getItem('div_v29')) || { key: "", pool: [], brain: { subs: [] } },
+    // Dynamically detect if we are on GitHub Pages or Local
+    basePath: window.location.pathname.startsWith('/DivTube') ? '/DivTube' : '',
+    db: JSON.parse(localStorage.getItem('div_v30')) || { key: "", pool: [], brain: { subs: [] } },
     engineReady: false,
 
     init() {
@@ -132,30 +135,43 @@ const app = {
         this.renderHome();
     },
 
-    nav(path) { window.history.pushState({}, "", path); this.route(); },
+    nav(path) { 
+        // Ensure path starts with /DivTube if applicable
+        const target = this.basePath + path;
+        window.history.pushState({}, "", target); 
+        this.route(); 
+    },
 
     route() {
-        const path = window.location.pathname;
+        const fullPath = window.location.pathname;
+        // Strip the base path to find the logical route
+        const route = fullPath.replace(this.basePath, '') || '/home';
+        
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active-view'));
-        if (path.includes('settings')) document.getElementById('view-settings').classList.add('active-view');
-        else if (path.includes('watch')) {
+        document.querySelectorAll('.nav-item').forEach(v => v.classList.remove('active'));
+
+        if (route.includes('settings')) {
+            document.getElementById('view-settings').classList.add('active-view');
+            document.getElementById('link-settings').classList.add('active');
+        } else if (route.includes('watch')) {
             document.getElementById('view-watch').classList.add('active-view');
             this.renderRecommendations();
         } else {
             document.getElementById('view-home').classList.add('active-view');
+            document.getElementById('link-home').classList.add('active');
             this.renderHome();
         }
     },
 
     async search() {
         const q = document.getElementById('searchBox').value;
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=20&type=video&key=${this.db.key}`);
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=25&type=video&key=${this.db.key}`);
         const data = await res.json();
         const mapped = data.items.map(i => ({
             id: i.id.videoId, channelId: i.snippet.channelId, channelTitle: i.snippet.channelTitle,
             title: i.snippet.title.replace(/['"]/g, ""), thumb: i.snippet.thumbnails.high.url
         }));
-        this.db.pool = [...mapped, ...this.db.pool].slice(0, 100);
+        this.db.pool = [...mapped, ...this.db.pool].filter((v,i,a) => a.findIndex(t=>(t.id===v.id))===i).slice(0, 100);
         this.save();
         this.renderHome();
     },
@@ -168,9 +184,11 @@ const app = {
                 <div class="thumb-wrap" onclick="app.play('${v.id}', '${v.title}')">
                     <img src="${v.thumb}">
                 </div>
-                <div style="padding:12px;">
-                    <div style="font-weight:700; font-size:14px; height:40px; overflow:hidden;">${v.title}</div>
-                    <div style="color:var(--primary); font-size:12px; margin-top:8px; cursor:pointer;" onclick="app.openChannel('${v.channelId}')">${v.channelTitle}</div>
+                <div style="padding:15px;">
+                    <div style="font-weight:800; font-size:14px; height:42px; overflow:hidden; line-height:1.4;">${v.title}</div>
+                    <div style="color:var(--primary); font-size:11px; margin-top:10px; font-weight:900; cursor:pointer;" onclick="app.openChannel('${v.channelId}')">
+                        ${v.channelTitle} • <span style="text-decoration:underline;">INSIGHT</span>
+                    </div>
                 </div>
             </div>
         `).join('');
@@ -185,16 +203,16 @@ const app = {
 
         document.getElementById('m-title').innerText = info.title;
         document.getElementById('m-sub-area').innerHTML = `
-            <button class="btn" style="background:${isSubbed ? 'var(--warn)' : 'var(--sub)'}; color:white;" onclick="app.toggleSub('${cid}')">
+            <button class="btn" style="background:${isSubbed ? 'var(--warn)' : 'var(--sub)'}; color:${isSubbed ? 'white' : 'black'};" onclick="app.toggleSub('${cid}')">
                 ${isSubbed ? 'UNSUBSCRIBE' : 'SUBSCRIBE'}
             </button>`;
 
-        const vRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${cid}&maxResults=15&order=date&type=video&key=${this.db.key}`);
+        const vRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${cid}&maxResults=20&order=date&type=video&key=${this.db.key}`);
         const vData = await vRes.json();
         document.getElementById('m-vids').innerHTML = vData.items.map(v => `
             <div class="card" onclick="app.play('${v.id.videoId}', '${v.snippet.title.replace(/['"]/g, "")}')">
                 <div class="thumb-wrap"><img src="${v.snippet.thumbnails.medium.url}"></div>
-                <div style="padding:8px; font-size:11px; font-weight:700;">${v.snippet.title}</div>
+                <div style="padding:10px; font-size:12px; font-weight:800; height:45px; overflow:hidden;">${v.snippet.title}</div>
             </div>
         `).join('');
     },
@@ -204,15 +222,15 @@ const app = {
         if (idx > -1) this.db.brain.subs.splice(idx, 1);
         else this.db.brain.subs.push(cid);
         this.save();
-        this.openChannel(cid); // Re-render modal state
+        this.openChannel(cid);
     },
 
     renderRecommendations() {
-        const recs = this.db.pool.slice(0, 10);
+        const recs = this.db.pool.slice(0, 15);
         document.getElementById('rec-sidebar').innerHTML = recs.map(v => `
-            <div class="rec-card" onclick="app.play('${v.id}', '${v.title}')">
+            <div class="rec-item" onclick="app.play('${v.id}', '${v.title}')">
                 <img src="${v.thumb}" class="rec-thumb">
-                <div style="font-size:12px; font-weight:700; overflow:hidden;">${v.title.substring(0,40)}...</div>
+                <div style="font-size:12px; font-weight:800; line-height:1.3;">${v.title}</div>
             </div>
         `).join('');
     },
@@ -226,7 +244,7 @@ const app = {
 
     closeModal() { document.getElementById('modal-overlay').style.display = 'none'; this.renderHome(); },
     saveKey() { this.db.key = document.getElementById('ytKey').value; this.save(); location.reload(); },
-    save() { localStorage.setItem('div_v29', JSON.stringify(this.db)); }
+    save() { localStorage.setItem('div_v30', JSON.stringify(this.db)); }
 };
 
 window.app = app;
