@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <title>DivTube Sovereign v35.0</title>
+    <title>DivTube Sovereign v37.0</title>
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -14,7 +14,6 @@
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
         
-        /* Persistent Navigation */
         aside { width: 240px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 1.5rem; display: flex; flex-direction: column; flex-shrink: 0; }
         .logo { font-weight: 900; font-size: 1.8rem; color: var(--primary); letter-spacing: -2px; cursor: pointer; margin-bottom: 2rem; }
         .nav-item { padding: 12px; border-radius: 12px; cursor: pointer; color: rgba(255,255,255,0.4); font-weight: 700; margin-bottom: 5px; text-decoration: none; display: flex; align-items: center; gap: 10px; }
@@ -24,7 +23,6 @@
         .top-bar { padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; gap: 20px; background: var(--bg); z-index: 100; }
         .content-area { flex: 1; overflow-y: auto; padding: 2rem; background: radial-gradient(circle at top right, #0d1117, #010204); }
 
-        /* Dedicated View Containers */
         .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
         .card { background: var(--card); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); transition: 0.2s; cursor: pointer; }
         .card:hover { border-color: var(--primary); transform: translateY(-2px); }
@@ -34,13 +32,17 @@
         .theater-container { position: relative; width: 100%; padding-top: 56.25%; background: #000; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
         .theater-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
+        /* Autoplay Overlay */
+        #autoplay-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10; backdrop-filter: blur(5px); }
+        .timer-circle { width: 80px; height: 80px; border: 4px solid var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; margin-bottom: 1rem; }
+
         .btn { padding: 10px 20px; border-radius: 100px; border: none; font-weight: 800; cursor: pointer; }
         #boot-screen { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--primary); }
     </style>
 </head>
 <body>
 
-<div id="boot-screen">ISOLATING_VIEW_BUFFERS...</div>
+<div id="boot-screen">INITIATING_STREAM_LOGIC_V37...</div>
 
 <aside>
     <div class="logo" onclick="app.nav('/home')">DivTube</div>
@@ -52,50 +54,41 @@
 
 <main>
     <div class="top-bar">
-        <input type="text" id="globalSearch" placeholder="Search Sovereign Network..." style="flex:1; background:var(--card); border:1px solid var(--border); color:white; padding:12px 20px; border-radius:100px; outline:none;" onkeydown="if(event.key==='Enter') app.search(this.value)">
+        <input type="text" id="globalSearch" placeholder="Inject Search Intent..." style="flex:1; background:var(--card); border:1px solid var(--border); color:white; padding:12px 20px; border-radius:100px; outline:none;" onkeydown="if(event.key==='Enter') app.search(this.value)">
     </div>
 
-    <div class="content-area">
-        <section id="view-home" class="view" style="display:none;">
-            <h2 style="margin-bottom:20px; font-weight:900; opacity:0.5;">📡 AI_RANKED_FEED</h2>
-            <div id="home-grid" class="video-grid"></div>
-        </section>
-
-        <section id="view-search" class="view" style="display:none;">
-            <h2 style="margin-bottom:20px; font-weight:900; opacity:0.5;">🔍 SEARCH_RESULTS</h2>
-            <div id="search-grid" class="video-grid"></div>
-        </section>
-
-        <section id="view-history" class="view" style="display:none;">
-            <h2 style="margin-bottom:20px; font-weight:900; opacity:0.5;">📜 TEMPORAL_HISTORY</h2>
-            <div id="history-grid" class="video-grid"></div>
-        </section>
+    <div class="content-area" id="main-scroll">
+        <section id="view-home" class="view" style="display:none;"><div id="home-grid" class="video-grid"></div></section>
+        <section id="view-search" class="view" style="display:none;"><div id="search-grid" class="video-grid"></div></section>
+        <section id="view-history" class="view" style="display:none;"><div id="history-grid" class="video-grid"></div></section>
 
         <section id="view-watch" class="view" style="display:none;">
             <div class="watch-grid">
                 <div class="main-player">
-                    <div class="theater-container" id="theater-mount"></div>
+                    <div class="theater-container">
+                        <div id="theater-mount"></div>
+                        <div id="autoplay-overlay">
+                            <div class="timer-circle" id="auto-timer">7</div>
+                            <div style="font-weight:900;">NEXT_STREAM_INCOMING</div>
+                            <button class="btn" style="margin-top:15px; background:var(--warn); color:white;" onclick="app.cancelAutoplay()">CANCEL</button>
+                        </div>
+                    </div>
                     <h1 id="t-title" style="margin:20px 0 10px 0; font-size:1.5rem; font-weight:900;"></h1>
-                    
-                    <div style="display:flex; align-items:center; gap:15px; margin-top:15px; padding-bottom:15px; border-bottom:1px solid var(--border);">
-                        <div id="watch-channel-name" style="font-weight:900; margin-right:auto; color:var(--primary); cursor:pointer;"></div>
+                    <div style="display:flex; align-items:center; gap:15px; border-bottom:1px solid var(--border); padding-bottom:15px;">
+                        <div id="watch-channel-name" style="font-weight:900; margin-right:auto; color:var(--primary);"></div>
                         <button id="btn-like" class="btn" onclick="app.toggleLike()" style="background:rgba(255,255,255,0.05); color:white;">👍 Like</button>
                         <button id="btn-sub-watch" class="btn" onclick="app.toggleSub()" style="background:var(--text); color:black;">SUBSCRIBE</button>
                     </div>
-
-                    <div style="background:var(--card); padding:20px; border-radius:12px; margin-top:20px; border:1px solid var(--border);">
-                        <div id="t-desc" style="font-size:14px; color:#aaa; line-height:1.6; white-space:pre-wrap;"></div>
-                    </div>
+                    <div id="t-desc" style="background:var(--card); padding:20px; border-radius:12px; margin-top:20px; font-size:14px; color:#aaa; line-height:1.6; white-space:pre-wrap;"></div>
                 </div>
-                <div id="rec-sidebar" style="display:flex; flex-direction:column; gap:15px;"></div>
+                <div id="rec-sidebar"></div>
             </div>
         </section>
 
         <section id="view-settings" class="view" style="display:none;">
-            <div style="max-width:400px; background:var(--card); padding:2rem; border-radius:16px; border:1px solid var(--border);">
-                <h3>AI Core Config</h3>
-                <input type="password" id="ytKey" placeholder="API KEY" style="width:100%; margin:10px 0; padding:12px; background:#000; border:1px solid var(--border); color:white; border-radius:8px;">
-                <button class="btn" style="background:var(--primary); color:white; width:100%;" onclick="app.saveKey()">UPDATE ENGINE</button>
+            <div style="max-width:400px; background:var(--card); padding:2rem; border-radius:16px;">
+                <input type="password" id="ytKey" placeholder="API KEY" style="width:100%; padding:12px; background:#000; border:1px solid var(--border); color:white; border-radius:8px;">
+                <button class="btn" style="background:var(--primary); color:white; width:100%; margin-top:10px;" onclick="app.saveKey()">REBOOT SYSTEM</button>
             </div>
         </section>
     </div>
@@ -111,8 +104,7 @@ class SovereignAI:
         brain = json.loads(brain_json)
         subs = brain.get("subs", [])
         for v in pool:
-            v['isSubbed'] = v['channelId'] in subs
-            v['score'] = 1000 if v['isSubbed'] else 1
+            v['score'] = 1000 if v['channelId'] in subs else 1
         pool.sort(key=lambda x: x['score'], reverse=True)
         return json.dumps(pool)
 
@@ -123,16 +115,19 @@ window.app.onEngineReady()
 
 <script>
 const app = {
-    db: JSON.parse(localStorage.getItem('div_v35')) || { 
-        key: "", pool: [], brain: { subs: [], liked: [], history: [] } 
-    },
+    basePath: window.location.pathname.startsWith('/DivTube') ? '/DivTube' : '',
+    db: JSON.parse(localStorage.getItem('div_v37')) || { key: "", pool: [], brain: { subs: [], liked: [], history: [] } },
     searchBuffer: [],
+    relatedBuffer: [],
     engineReady: false,
+    autoTimer: null,
 
     init() {
         document.getElementById('ytKey').value = this.db.key;
         window.onpopstate = () => this.route();
         this.route();
+        // Global listener for YouTube Iframe API to detect video end
+        window.onYouTubeIframeAPIReady = () => {};
     },
 
     onEngineReady() {
@@ -142,35 +137,26 @@ const app = {
     },
 
     nav(path) {
-        window.history.pushState({}, "", path); 
+        window.history.pushState({}, "", this.basePath + path); 
         this.route(); 
     },
 
     route() {
-        const route = window.location.pathname.replace(/^\/|\/$/g, '') || 'home';
+        const route = window.location.pathname.replace(this.basePath, '').replace(/^\/|\/$/g, '') || 'home';
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        this.cancelAutoplay();
 
-        if (route === 'settings') {
-            this.showView('settings');
-        } else if (route === 'watch') {
-            document.getElementById('view-watch').style.display = 'block';
-        } else if (route === 'search') {
-            this.showView('search');
-            this.renderSearch();
-        } else if (route === 'history') {
-            this.showView('history');
-            this.renderHistory();
-        } else {
-            this.showView('home');
-            this.renderHome();
-        }
+        if (route === 'settings') this.showView('settings');
+        else if (route === 'watch') document.getElementById('view-watch').style.display = 'block';
+        else if (route === 'search') { this.showView('search'); this.renderSearch(); }
+        else if (route === 'history') { this.showView('history'); this.renderHistory(); }
+        else { this.showView('home'); this.renderHome(); }
     },
 
     showView(id) {
         document.getElementById(`view-${id}`).style.display = 'block';
-        const link = document.getElementById(`link-${id}`);
-        if (link) link.classList.add('active');
+        if (document.getElementById(`link-${id}`)) document.getElementById(`link-${id}`).classList.add('active');
     },
 
     async search(q) {
@@ -181,8 +167,8 @@ const app = {
             id: i.id.videoId, channelId: i.snippet.channelId, channelTitle: i.snippet.channelTitle,
             title: i.snippet.title, thumb: i.snippet.thumbnails.high.url, desc: i.snippet.description
         }));
-        
-        // Show the search tab in sidebar temporarily
+        this.db.pool = [...this.searchBuffer, ...this.db.pool].slice(0, 200);
+        this.save();
         document.getElementById('link-search').style.display = 'flex';
         this.nav('/search');
     },
@@ -193,86 +179,115 @@ const app = {
         this.fillGrid('home-grid', ranked);
     },
 
-    renderSearch() {
-        this.fillGrid('search-grid', this.searchBuffer);
-    },
-
-    renderHistory() {
-        this.fillGrid('history-grid', this.db.brain.history);
-    },
+    renderSearch() { this.fillGrid('search-grid', this.searchBuffer); },
+    renderHistory() { this.fillGrid('history-grid', this.db.brain.history); },
 
     fillGrid(containerId, list) {
-        document.getElementById(containerId).innerHTML = list.length ? list.map(v => `
-            <div class="card" onclick="app.play('${v.id}', '${containerId}')">
+        document.getElementById(containerId).innerHTML = list.map(v => `
+            <div class="card" onclick="app.play('${v.id}')">
                 <img src="${v.thumb}" style="width:100%; aspect-ratio:16/9; object-fit:cover;">
-                <div style="padding:15px;">
-                    <div style="font-weight:800; font-size:14px; height:40px; overflow:hidden;">${v.title}</div>
-                    <div style="color:var(--primary); font-size:11px; margin-top:8px; font-weight:900;">${v.channelTitle}</div>
-                </div>
+                <div style="padding:15px;"><div style="font-weight:800; font-size:14px; height:40px; overflow:hidden;">${v.title}</div><div style="color:var(--primary); font-size:11px; margin-top:8px;">${v.channelTitle}</div></div>
             </div>
-        `).join('') : `<div style="opacity:0.3; padding:2rem;">Stream is empty...</div>`;
+        `).join('');
     },
 
-    play(id, sourceGrid) {
-        const video = [...this.searchBuffer, ...this.db.pool, ...this.db.brain.history].find(v => v.id === id);
+    async play(id) {
+        const video = [...this.searchBuffer, ...this.db.pool, ...this.db.brain.history, ...this.relatedBuffer].find(v => v.id === id);
         if (!video) return;
         this.activeVideo = video;
-        
-        // Log to history
         this.db.brain.history = [video, ...this.db.brain.history.filter(v => v.id !== id)].slice(0, 50);
         this.save();
-
         this.nav('/watch');
-        document.getElementById('theater-mount').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1" allowfullscreen></iframe>`;
+        this.cancelAutoplay();
+
+        // Inject Iframe with postMessage enabled to track state
+        document.getElementById('theater-mount').innerHTML = `<iframe id="yt-player" src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&enablejsapi=1" allowfullscreen></iframe>`;
         document.getElementById('t-title').innerText = video.title;
         document.getElementById('t-desc').innerText = video.desc;
         document.getElementById('watch-channel-name').innerText = video.channelTitle;
+        document.getElementById('main-scroll').scrollTo(0,0);
         
         this.updateWatchUI();
-        this.renderRecommendations();
+        await this.fetchRelated(video);
+        this.listenForEnd();
+    },
+
+    listenForEnd() {
+        window.addEventListener("message", (event) => {
+            const data = JSON.parse(event.data);
+            if (data.event === "infoDelivery" && data.info && data.info.playerState === 0) {
+                this.startAutoplayCountdown();
+            }
+        });
+    },
+
+    startAutoplayCountdown() {
+        if (!this.relatedBuffer.length) return;
+        let count = 7;
+        const overlay = document.getElementById('autoplay-overlay');
+        const timerTxt = document.getElementById('auto-timer');
+        overlay.style.display = 'flex';
+        
+        this.autoTimer = setInterval(() => {
+            count--;
+            timerTxt.innerText = count;
+            if (count <= 0) {
+                this.cancelAutoplay();
+                this.play(this.relatedBuffer[0].id);
+            }
+        }, 1000);
+    },
+
+    cancelAutoplay() {
+        clearInterval(this.autoTimer);
+        document.getElementById('autoplay-overlay').style.display = 'none';
+        document.getElementById('auto-timer').innerText = '7';
+    },
+
+    async fetchRelated(video) {
+        const query = video.title.replace(/[^\w\s]/gi, '').split(' ').slice(0, 4).join(' ');
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&maxResults=15&type=video&key=${this.db.key}`);
+        const data = await res.json();
+        this.relatedBuffer = data.items.map(i => ({
+            id: i.id.videoId, channelId: i.snippet.channelId, channelTitle: i.snippet.channelTitle,
+            title: i.snippet.title, thumb: i.snippet.thumbnails.high.url, desc: i.snippet.description
+        })).filter(v => v.id !== video.id);
+
+        document.getElementById('rec-sidebar').innerHTML = this.relatedBuffer.map(v => `
+            <div style="display:flex; gap:12px; cursor:pointer; margin-bottom:12px;" onclick="app.play('${v.id}')">
+                <img src="${v.thumb}" style="width:140px; aspect-ratio:16/9; border-radius:8px; object-fit:cover;">
+                <div style="font-size:12px; font-weight:800; line-height:1.2;">${v.title.substring(0,40)}...</div>
+            </div>
+        `).join('');
     },
 
     updateWatchUI() {
-        const isSubbed = this.db.brain.subs.includes(this.activeVideo.channelId);
+        const isSub = this.db.brain.subs.includes(this.activeVideo.channelId);
         const btn = document.getElementById('btn-sub-watch');
-        btn.innerText = isSubbed ? "SUBSCRIBED" : "SUBSCRIBE";
-        btn.style.background = isSubbed ? "var(--card)" : "var(--text)";
-        btn.style.color = isSubbed ? "var(--text)" : "black";
+        btn.innerText = isSub ? "SUBSCRIBED" : "SUBSCRIBE";
+        btn.style.background = isSub ? "var(--card)" : "var(--text)";
+        btn.style.color = isSub ? "var(--text)" : "black";
+        
+        const isLiked = this.db.brain.liked.includes(this.activeVideo.id);
+        document.getElementById('btn-like').style.color = isLiked ? "var(--like)" : "white";
     },
 
     toggleSub() {
         const cid = this.activeVideo.channelId;
         const idx = this.db.brain.subs.indexOf(cid);
-        if (idx > -1) this.db.brain.subs.splice(idx, 1);
-        else this.db.brain.subs.push(cid);
-        this.save();
-        this.updateWatchUI();
+        if (idx > -1) this.db.brain.subs.splice(idx, 1); else this.db.brain.subs.push(cid);
+        this.save(); this.updateWatchUI();
     },
 
     toggleLike() {
         const vid = this.activeVideo.id;
         const idx = this.db.brain.liked.indexOf(vid);
-        if (idx > -1) this.db.brain.liked.splice(idx, 1);
-        else this.db.brain.liked.push(vid);
-        this.save();
-        this.updateWatchUI();
-    },
-
-    renderRecommendations() {
-        const recs = this.db.pool.filter(v => v.id !== this.activeVideo.id).slice(0, 15);
-        document.getElementById('rec-sidebar').innerHTML = recs.map(v => `
-            <div style="display:flex; gap:12px; cursor:pointer;" onclick="app.play('${v.id}')">
-                <img src="${v.thumb}" style="width:140px; aspect-ratio:16/9; border-radius:8px; object-fit:cover;">
-                <div>
-                    <div style="font-size:12px; font-weight:800; line-height:1.2;">${v.title.substring(0,40)}...</div>
-                    <div style="font-size:10px; color:var(--primary); margin-top:4px;">${v.channelTitle}</div>
-                </div>
-            </div>
-        `).join('');
+        if (idx > -1) this.db.brain.liked.splice(idx, 1); else this.db.brain.liked.push(vid);
+        this.save(); this.updateWatchUI();
     },
 
     saveKey() { this.db.key = document.getElementById('ytKey').value; this.save(); location.reload(); },
-    save() { localStorage.setItem('div_v35', JSON.stringify(this.db)); }
+    save() { localStorage.setItem('div_v37', JSON.stringify(this.db)); }
 };
 
 window.app = app;
