@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <title>DivTube Sovereign</title>
-    <link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%238b5cf6'/><path d='M35 30l40 20-40 20z' fill='white'/></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%238b5cf6'/><path d='M35 30l40 20-40 20z' fill='white'/></svg>">
     
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
         body { margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
 
         aside { width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 2rem 1.5rem; display: flex; flex-direction: column; flex-shrink: 0; }
-        .logo-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 3rem; cursor: pointer; }
+        .logo-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 3rem; }
         .logo-icon { width: 32px; height: 32px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(139,92,246,0.3); }
         .logo-text { font-weight: 800; font-size: 1.4rem; background: linear-gradient(to right, #fff, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
@@ -27,34 +27,28 @@
 
         main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .top-bar { padding: 1.2rem 2.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 2rem; background: rgba(5,5,7,0.8); backdrop-filter: blur(20px); }
-        .search-input { flex: 1; background: var(--card); border: 1px solid var(--border); color: white; padding: 14px 24px; border-radius: 16px; outline: none; transition: 0.2s; }
-        .search-input:focus { border-color: var(--primary); }
+        .search-input { flex: 1; background: var(--card); border: 1px solid var(--border); color: white; padding: 14px 24px; border-radius: 16px; outline: none; }
 
         .content-area { flex: 1; overflow-y: auto; padding: 2.5rem; }
         .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
         
-        .card { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); transition: 0.4s; cursor: pointer; position: relative; }
+        .card { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); transition: 0.4s; cursor: pointer; }
         .card:hover { transform: translateY(-8px); border-color: var(--primary); }
         .card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
         .card-info { padding: 1.2rem; }
-        .card-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 8px; height: 2.8rem; overflow: hidden; }
-        
-        .neural-insight { font-size: 0.7rem; background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 4px 8px; border-radius: 6px; font-weight: 700; margin-top: 8px; display: inline-block; }
+        .neural-tag { font-size: 0.65rem; background: rgba(139, 92, 246, 0.15); color: var(--primary); padding: 4px 10px; border-radius: 100px; font-weight: 800; display: inline-block; margin-top: 10px; }
 
         #boot-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; text-align: center; }
-        .loader { width: 35px; height: 35px; border: 3px solid var(--glass); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        .loader { width: 40px; height: 40px; border: 3px solid var(--glass); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .blacklist-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; pointer-events: none; }
-        .card:hover .blacklist-overlay { opacity: 1; pointer-events: all; }
     </style>
 </head>
 <body>
 
 <div id="boot-screen">
     <div class="loader"></div>
-    <div id="boot-text" style="color:var(--primary); font-size:0.7rem; letter-spacing:2px; font-weight:800; text-transform:uppercase;">Booting_Virtual_Environment</div>
-    <div id="boot-subtext" style="color:rgba(255,255,255,0.3); font-size:10px;">Downloading Python Runtime...</div>
+    <div id="boot-text" style="color:var(--primary); font-size:0.75rem; letter-spacing:3px; font-weight:800;">HYDRATING_NEURAL_ENGINE</div>
+    <div id="boot-subtext" style="color:rgba(255,255,255,0.4); font-size:11px;">Loading NumPy and Scikit-Learn binaries...</div>
 </div>
 
 <aside>
@@ -63,8 +57,7 @@
         <div class="logo-text">DIVTUBE</div>
     </div>
     <nav>
-        <div class="nav-item" id="link-home" onclick="app.nav('/home')">📡 Neural Feed</div>
-        <div class="nav-item" id="link-search" onclick="app.nav('/search')" style="display:none;">🔍 Current</div>
+        <div class="nav-item" id="link-home" onclick="app.nav('/home')">📡 Feed</div>
         <div class="nav-item" id="link-history" onclick="app.nav('/history')">📜 History</div>
         <div class="nav-item" id="link-settings" onclick="app.nav('/settings')">⚙️ Engine</div>
     </nav>
@@ -72,128 +65,102 @@
 
 <main>
     <div class="top-bar">
-        <input type="text" class="search-input" id="globalSearch" placeholder="Inject interest into core..." onkeydown="if(event.key==='Enter') app.search(this.value)">
+        <input type="text" class="search-input" id="globalSearch" placeholder="Inject interest query..." onkeydown="if(event.key==='Enter') app.search(this.value)">
     </div>
     <div class="content-area" id="main-scroll">
         <section id="view-home" class="view" style="display:none;"><div id="home-grid" class="video-grid"></div></section>
-        <section id="view-search" class="view" style="display:none;"><div id="search-grid" class="video-grid"></div></section>
         <section id="view-history" class="view" style="display:none;"><div id="history-grid" class="video-grid"></div></section>
         <section id="view-watch" class="view" style="display:none;">
-            <div style="display:grid; grid-template-columns: 1fr 400px; gap:2.5rem;">
-                <div>
-                    <div style="border-radius:24px; overflow:hidden; border:1px solid var(--border); background:#000; aspect-ratio:16/9;">
-                        <div id="theater-mount" style="width:100%; height:100%;"></div>
-                    </div>
-                    <h1 id="t-title" style="margin:2rem 0 1rem; font-size:1.6rem; font-weight:800;"></h1>
-                    <div id="comments-mount"></div>
-                </div>
+            <div style="display:grid; grid-template-columns: 1fr 350px; gap:2.5rem;">
+                <div id="theater-mount" style="aspect-ratio:16/9; background:#000; border-radius:24px; overflow:hidden; border: 1px solid var(--border);"></div>
                 <div id="rec-sidebar"></div>
             </div>
         </section>
         <section id="view-settings" class="view" style="display:none;">
-            <div style="max-width:500px; background:var(--card); padding:2.5rem; border-radius:24px; border:1px solid var(--border);">
-                <h3 style="margin-top:0;">Neural Core v43.0</h3>
+            <div style="max-width:440px; background:var(--card); padding:2.5rem; border-radius:24px; border: 1px solid var(--border);">
+                <h3 style="margin-top:0;">Neural Core v44.0</h3>
                 <input type="password" id="ytKey" class="search-input" style="width:100%; margin-top:1rem;" placeholder="YouTube API Key">
-                <button onclick="app.saveKey()" style="width:100%; margin-top:1rem; padding:14px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:800; cursor:pointer;">REBOOT ENGINE</button>
-                <div style="margin-top:2rem;">
-                    <button onclick="app.clearBlacklist()" style="background:none; border:1px solid #ff4444; color:#ff4444; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:0.7rem; font-weight:800;">CLEAR NEURAL BLACKLIST</button>
-                </div>
+                <button onclick="app.saveKey()" style="width:100%; margin-top:1.5rem; padding:14px; background:var(--primary); color:white; border:none; border-radius:14px; font-weight:800; cursor:pointer;">REBOOT ENGINE</button>
             </div>
         </section>
     </div>
 </main>
 
 <script type="py" config>
-{ "packages": ["scikit-learn", "numpy"] }
+{ "packages": ["numpy", "scikit-learn"] }
 </script>
 
 <script type="py">
 import json
-import asyncio
+import numpy as np
 from js import window, document
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
-async def neural_boot():
-    subtext = document.getElementById("boot-subtext")
+def rank_engine(pool_json, brain_json):
+    pool = json.loads(pool_json)
+    brain = json.loads(brain_json)
+    if not pool: return json.dumps([])
+
+    # Mathematical representation of titles
+    vectorizer = TfidfVectorizer(stop_words='english')
+    all_titles = [v['title'] for v in pool]
+    
     try:
-        # Step 1: Force hydration of heavy packages
-        import numpy as np
-        from sklearn.feature_extraction.text import TfidfVectorizer
-        from sklearn.metrics.pairwise import cosine_similarity
+        tfidf_matrix = vectorizer.fit_transform(all_titles)
         
-        subtext.innerText = "MAPPING_VECTOR_SPACE..."
-
-        class BrainEngine:
-            def __init__(self):
-                self.vectorizer = TfidfVectorizer(stop_words='english', max_features=1000)
-
-            def rank(self, pool_json, brain_json, current_json=None):
-                pool = json.loads(pool_json)
-                brain = json.loads(brain_json)
-                if not pool: return json.dumps({"list": []})
-
-                blacklist = brain.get("blacklist", [])
-                
-                # Filter out explicitly blacklisted IDs or Titles
-                pool = [v for v in pool if v['id'] not in blacklist]
-                
-                titles = [v['title'] for v in pool]
-                tfidf_matrix = self.vectorizer.fit_transform(titles)
-                
-                # Build Profile
-                history = brain.get("history", [])
-                user_scores = np.zeros(len(pool))
-                if history:
-                    h_titles = " ".join([h['title'] for h in history])
-                    h_vec = self.vectorizer.transform([h_titles])
-                    user_scores = cosine_similarity(h_vec, tfidf_matrix).flatten()
-
-                for i, v in enumerate(pool):
-                    v['score'] = float(user_scores[i])
-                    v['reason'] = "Neural Preference" if v['score'] > 0.15 else "Fresh Discovery"
-                
-                pool.sort(key=lambda x: x['score'], reverse=True)
-                return json.dumps({"list": pool})
-
-        window.pyRanker = BrainEngine().rank
-        window.app.onEngineReady()
+        # Calculate interest based on history
+        history = brain.get("history", [])
+        if history:
+            history_text = " ".join([h['title'] for h in history])
+            history_vec = vectorizer.transform([history_text])
+            similarities = cosine_similarity(history_vec, tfidf_matrix).flatten()
+            
+            for i, v in enumerate(pool):
+                v['score'] = float(similarities[i])
+        else:
+            for v in pool: v['score'] = 0
+            
+        pool.sort(key=lambda x: x['score'], reverse=True)
+    except:
+        pass
         
-    except Exception as e:
-        document.getElementById("boot-text").innerText = "CORE_FAILURE"
-        subtext.innerText = str(e)
+    return json.dumps(pool)
 
-asyncio.ensure_future(neural_boot())
+# Attach to window for JS access
+window.pyRanker = rank_engine
+window.app.onEngineReady()
 </script>
 
 <script>
 const app = {
-    db: JSON.parse(localStorage.getItem('div_v43')) || { 
-        key: "", pool: [], brain: { history: [], blacklist: [] } 
-    },
+    db: JSON.parse(localStorage.getItem('div_v44')) || { key: "", pool: [], brain: { history: [] } },
     engineReady: false,
 
     init() {
         document.getElementById('ytKey').value = this.db.key;
-        window.onpopstate = () => this.route();
     },
 
     onEngineReady() {
         this.engineReady = true;
         document.getElementById('boot-screen').style.opacity = '0';
-        setTimeout(() => { document.getElementById('boot-screen').remove(); this.route(); }, 500);
+        setTimeout(() => { 
+            document.getElementById('boot-screen').remove(); 
+            this.route(); 
+        }, 500);
     },
 
     nav(path) { window.history.pushState({}, "", path); this.route(); },
 
     route() {
         if(!this.engineReady) return;
-        const route = window.location.pathname.replace(/^\/|\/$/g, '') || 'home';
+        const path = window.location.pathname.replace(/^\/|\/$/g, '') || 'home';
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        
-        if (route === 'settings') this.showView('settings');
-        else if (route === 'watch') document.getElementById('view-watch').style.display = 'block';
-        else if (route === 'search') { this.showView('search'); this.renderSearch(); }
-        else if (route === 'history') { this.showView('history'); this.renderHistory(); }
+
+        if (path === 'settings') { this.showView('settings'); }
+        else if (path === 'history') { this.showView('history'); this.renderHistory(); }
+        else if (path === 'watch') { document.getElementById('view-watch').style.display = 'block'; }
         else { this.showView('home'); this.renderHome(); }
     },
 
@@ -203,77 +170,64 @@ const app = {
     },
 
     async search(q) {
-        if (!q || !this.db.key) return;
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=25&type=video&key=${this.db.key}`);
-        const data = await res.json();
-        this.searchBuffer = data.items.map(i => ({
-            id: i.id.videoId, channelId: i.snippet.channelId, channelTitle: i.snippet.channelTitle,
-            title: i.snippet.title, thumb: i.snippet.thumbnails.high.url
-        }));
-        this.db.pool = [...this.searchBuffer, ...this.db.pool].slice(0, 300);
-        this.save();
-        document.getElementById('link-search').style.display = 'flex';
-        this.nav('/search');
-    },
-
-    addToBlacklist(id, e) {
-        e.stopPropagation();
-        this.db.brain.blacklist.push(id);
-        this.save();
-        this.route();
-    },
-
-    clearBlacklist() {
-        this.db.brain.blacklist = [];
-        this.save();
-        alert("Neural Blacklist Cleared");
-    },
-
-    async play(id) {
-        const video = [...(this.searchBuffer || []), ...this.db.pool, ...this.db.brain.history].find(v => v.id === id);
-        if (!video) return;
-        this.db.brain.history = [video, ...this.db.brain.history.filter(v => v.id !== id)].slice(0, 50);
-        this.save();
-        this.nav('/watch');
-        document.getElementById('theater-mount').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1" allowfullscreen style="width:100%; height:100%; border:none;"></iframe>`;
-        document.getElementById('t-title').innerText = video.title;
-        this.renderWatchRecs();
-    },
-
-    renderWatchRecs() {
-        const data = JSON.parse(window.pyRanker(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain)));
-        document.getElementById('rec-sidebar').innerHTML = data.list.slice(0, 10).map(v => `
-            <div style="display:flex; gap:12px; cursor:pointer; margin-bottom:15px;" onclick="app.play('${v.id}')">
-                <img src="${v.thumb}" style="width:120px; border-radius:12px;">
-                <div style="font-size:0.75rem; font-weight:700;">${v.title.substring(0,40)}...</div>
-            </div>`).join('');
+        if (!this.db.key) return alert("API Key Required in Settings");
+        try {
+            const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=25&type=video&key=${this.db.key}`);
+            const data = await res.json();
+            const results = data.items.map(i => ({
+                id: i.id.videoId, title: i.snippet.title, thumb: i.snippet.thumbnails.high.url
+            }));
+            this.db.pool = [...results, ...this.db.pool].slice(0, 150);
+            this.save();
+            this.nav('/home');
+        } catch (e) { alert("Search Failed. Check API Key."); }
     },
 
     renderHome() {
-        const data = JSON.parse(window.pyRanker(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain)));
-        this.fillGrid('home-grid', data.list);
+        if (!window.pyRanker) return;
+        const ranked = JSON.parse(window.pyRanker(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain)));
+        this.fillGrid('home-grid', ranked);
     },
+
+    renderHistory() { this.fillGrid('history-grid', this.db.brain.history); },
 
     fillGrid(id, list) {
         document.getElementById(id).innerHTML = list.map(v => `
             <div class="card" onclick="app.play('${v.id}')">
                 <img src="${v.thumb}">
                 <div class="card-info">
-                    <div class="card-title">${v.title}</div>
-                    <div class="neural-insight">${v.reason}</div>
-                </div>
-                <div class="blacklist-overlay">
-                    <button onclick="app.addToBlacklist('${v.id}', event)" style="background:#ff4444; border:none; color:white; padding:8px 16px; border-radius:8px; font-weight:800; cursor:pointer;">🚫 TRASH</button>
+                    <div style="font-weight:700; font-size:0.9rem; line-height:1.3; height:2.4rem; overflow:hidden;">${v.title}</div>
+                    <div class="neural-tag">${v.score > 0.1 ? 'Matched Vector' : 'Discovery'}</div>
                 </div>
             </div>`).join('');
     },
 
-    renderSearch() { this.fillGrid('search-grid', this.searchBuffer || []); },
-    renderHistory() { this.fillGrid('history-grid', this.db.brain.history); },
+    play(id) {
+        const video = [...this.db.pool, ...this.db.brain.history].find(v => v.id === id);
+        if (video) {
+            this.db.brain.history = [video, ...this.db.brain.history.filter(x => x.id !== id)].slice(0, 30);
+            this.save();
+        }
+        this.nav('/watch');
+        document.getElementById('theater-mount').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>`;
+        this.renderWatchRecs();
+    },
+
+    renderWatchRecs() {
+        const ranked = JSON.parse(window.pyRanker(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain)));
+        document.getElementById('rec-sidebar').innerHTML = ranked.slice(0, 8).map(v => `
+            <div style="display:flex; gap:12px; margin-bottom:15px; cursor:pointer;" onclick="app.play('${v.id}')">
+                <img src="${v.thumb}" style="width:120px; border-radius:10px;">
+                <div style="font-size:0.75rem; font-weight:700;">${v.title.substring(0,45)}...</div>
+            </div>`).join('');
+    },
+
     saveKey() { this.db.key = document.getElementById('ytKey').value; this.save(); location.reload(); },
-    save() { localStorage.setItem('div_v43', JSON.stringify(this.db)); }
+    save() { localStorage.setItem('div_v44', JSON.stringify(this.db)); }
 };
-window.app = app; app.init();
+
+window.app = app;
+app.init();
 </script>
 </body>
 </html>
