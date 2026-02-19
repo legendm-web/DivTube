@@ -5,7 +5,9 @@
     <title>DivTube Sovereign</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%238b5cf6'/><path d='M35 30l40 20-40 20z' fill='white'/></svg>">
     
-    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js" defer></script>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
@@ -37,7 +39,7 @@
         .card-info { padding: 1.2rem; }
         .neural-tag { font-size: 0.65rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
 
-        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; text-align: center; }
+        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; text-align: center; transition: 0.5s; }
         .loader { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
@@ -46,8 +48,8 @@
 
 <div id="boot-screen">
     <div class="loader"></div>
-    <div id="boot-text" style="color:var(--primary); font-size:0.75rem; font-weight:800; letter-spacing:2px;">INIT_NEURAL_SUBSYSTEM</div>
-    <div id="boot-subtext" style="color:rgba(255,255,255,0.3); font-size:11px;">Awaiting Pyodide environment...</div>
+    <div id="boot-text" style="color:var(--primary); font-size:0.75rem; font-weight:800; letter-spacing:2px;">TERMINAL_INITIALIZATION</div>
+    <div id="boot-subtext" style="color:rgba(255,255,255,0.3); font-size:11px;">Establishing Python Runtime...</div>
 </div>
 
 <aside>
@@ -84,75 +86,65 @@
     </div>
 </main>
 
-<script type="py" config>
-{ "packages": ["micropip"] }
-</script>
+<py-config>
+    packages = ["numpy", "scikit-learn"]
+</py-config>
 
 <script type="py">
 import json
-import asyncio
 from js import window, document
 
-async def boot_sequence():
-    sub = document.getElementById("boot-subtext")
+# This script only executes once the py-config packages are successfully loaded
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+def ranker(pool_json, brain_json):
     try:
-        import micropip
-        sub.innerText = "Downloading NumPy..."
-        await micropip.install("numpy")
-        sub.innerText = "Downloading Scikit-Learn..."
-        await micropip.install("scikit-learn")
-        
-        # Now it is safe to import
-        import numpy as np
-        from sklearn.feature_extraction.text import TfidfVectorizer
-        from sklearn.metrics.pairwise import cosine_similarity
-        
-        sub.innerText = "Finalizing Weights..."
+        pool = json.loads(pool_json)
+        brain = json.loads(brain_json)
+        if not pool: return json.dumps([])
 
-        def ranker(pool_json, brain_json):
-            pool = json.loads(pool_json)
-            brain = json.loads(brain_json)
-            if not pool: return json.dumps([])
+        vectorizer = TfidfVectorizer(stop_words='english')
+        titles = [v['title'] for v in pool]
+        tfidf_matrix = vectorizer.fit_transform(titles)
 
-            vectorizer = TfidfVectorizer(stop_words='english')
-            titles = [v['title'] for v in pool]
-            tfidf_matrix = vectorizer.fit_transform(titles)
+        history = brain.get("history", [])
+        if history:
+            h_text = " ".join([h['title'] for h in history])
+            h_vec = vectorizer.transform([h_text])
+            scores = cosine_similarity(h_vec, tfidf_matrix).flatten()
+            for i, v in enumerate(pool):
+                v['score'] = float(scores[i])
+        else:
+            for v in pool: v['score'] = 0
 
-            history = brain.get("history", [])
-            if history:
-                h_text = " ".join([h['title'] for h in history])
-                h_vec = vectorizer.transform([h_text])
-                scores = cosine_similarity(h_vec, tfidf_matrix).flatten()
-                for i, v in enumerate(pool):
-                    v['score'] = float(scores[i])
-            else:
-                for v in pool: v['score'] = 0
-
-            pool.sort(key=lambda x: x['score'], reverse=True)
-            return json.dumps(pool)
-
-        window.pyRanker = ranker
-        window.app.onEngineReady()
+        pool.sort(key=lambda x: x['score'], reverse=True)
+        return json.dumps(pool)
     except Exception as e:
-        sub.innerText = f"CRITICAL_FAIL: {str(e)}"
+        print(f"Ranking Error: {e}")
+        return pool_json
 
-# Fire the async bootloader
-asyncio.ensure_future(boot_sequence())
+# Bind to the JS context
+window.pyRanker = ranker
+window.app.onEngineReady()
 </script>
 
 <script>
 const app = {
-    db: JSON.parse(localStorage.getItem('div_v44_1')) || { key: "", pool: [], brain: { history: [] } },
+    db: JSON.parse(localStorage.getItem('div_v45')) || { key: "", pool: [], brain: { history: [] } },
     engineReady: false,
 
     init() {
         document.getElementById('ytKey').value = this.db.key;
+        // Keep the boot screen visible until Python signal
     },
 
     onEngineReady() {
         this.engineReady = true;
-        document.getElementById('boot-screen').style.opacity = '0';
-        setTimeout(() => { document.getElementById('boot-screen').remove(); this.route(); }, 500);
+        const boot = document.getElementById('boot-screen');
+        boot.style.opacity = '0';
+        setTimeout(() => { boot.remove(); this.route(); }, 500);
     },
 
     nav(path) { window.history.pushState({}, "", path); this.route(); },
@@ -174,16 +166,21 @@ const app = {
     },
 
     async search(q) {
-        if (!this.db.key) return alert("Key Required");
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=20&type=video&key=${this.db.key}`);
+        if (!this.db.key) return alert("API Key Required");
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=25&type=video&key=${this.db.key}`);
         const data = await res.json();
-        const results = data.items.map(i => ({ id: i.id.videoId, title: i.snippet.title, thumb: i.snippet.thumbnails.high.url }));
+        const results = data.items.map(i => ({ 
+            id: i.id.videoId, 
+            title: i.snippet.title, 
+            thumb: i.snippet.thumbnails.high.url 
+        }));
         this.db.pool = [...results, ...this.db.pool].slice(0, 100);
         this.save();
         this.route();
     },
 
     renderHome() {
+        if (!window.pyRanker) return;
         const ranked = JSON.parse(window.pyRanker(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain)));
         this.fillGrid('home-grid', ranked);
     },
@@ -212,7 +209,7 @@ const app = {
     },
 
     saveKey() { this.db.key = document.getElementById('ytKey').value; this.save(); location.reload(); },
-    save() { localStorage.setItem('div_v44_1', JSON.stringify(this.db)); }
+    save() { localStorage.setItem('div_v45', JSON.stringify(this.db)); }
 };
 window.app = app;
 app.init();
