@@ -2,60 +2,63 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <title>DivTube Sovereign v16.0</title>
-    
+    <title>DivTube Sovereign v17.0</title>
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js" defer></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #020305; --sidebar: #06080c; --card: #0c0f16;
+            --bg: #010204; --sidebar: #06080c; --card: #0c0f16;
             --primary: #8b5cf6; --text: #f1f5f9; --border: rgba(255,255,255,0.06);
             --accent: #10b981; --warn: #ef4444; --reason: #3b82f6;
         }
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: 0.2s; }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; transition: 0.2s; scrollbar-width: thin; scrollbar-color: #333 transparent; }
         body { margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar Navigation */
-        aside { width: 300px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 1.5rem; display: flex; flex-direction: column; z-index: 100; }
+        aside { width: 280px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 1.5rem; display: flex; flex-direction: column; z-index: 100; }
         .logo { font-weight: 900; font-size: 1.8rem; color: var(--primary); letter-spacing: -2px; cursor: pointer; margin-bottom: 2rem; }
         .nav-item { padding: 12px; border-radius: 12px; cursor: pointer; color: rgba(255,255,255,0.4); font-weight: 700; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; font-size: 0.9rem; }
+        .nav-item:hover { background: rgba(255,255,255,0.03); color: white; }
         .nav-item.active { background: rgba(139, 92, 246, 0.15); color: var(--primary); border: 1px solid rgba(139, 92, 246, 0.2); }
 
-        /* Cinema Theater */
-        #page-watch { padding: 0; max-width: 100%; position: relative; }
-        .theater-container { width: 100%; height: 80vh; background: #000; position: relative; }
-        .theater-container iframe { width: 100%; height: 100%; border: none; }
-        .watch-meta { padding: 2rem 4rem; background: linear-gradient(to top, var(--bg), transparent); margin-top: -50px; position: relative; z-index: 10; }
-
-        /* Video Grid & Cards */
-        main { flex: 1; overflow-y: auto; background: radial-gradient(circle at top right, #0d1117, #020305); }
-        .page { display: none; padding: 2rem; }
+        main { flex: 1; overflow-y: auto; background: radial-gradient(circle at top right, #0d1117, #010204); position: relative; }
+        .page { display: none; padding: 2rem; max-width: 1600px; margin: 0 auto; animation: fadeIn 0.3s ease; }
         .active-page { display: block; }
-        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem; }
-        
+
+        /* THEATER: BIGGER PLAYER */
+        #page-watch { padding: 0; max-width: 100%; height: 100vh; background: #000; }
+        .theater-viewport { width: 100%; height: 82vh; background: #000; position: relative; }
+        .theater-viewport iframe { width: 100%; height: 100%; border: none; }
+        .watch-details { padding: 2rem 4rem; display: flex; justify-content: space-between; align-items: center; }
+
+        /* NEURAL MAP */
+        #map-container { width: 100%; height: 500px; background: #000; border-radius: 24px; border: 1px solid var(--border); margin-top: 1rem; overflow: hidden; position: relative; }
+        .node { stroke: #fff; stroke-width: 1.5px; }
+        .link { stroke: var(--primary); stroke-opacity: 0.2; }
+
+        /* GRID */
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem; padding-top: 2rem; }
         .card { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; position: relative; }
         .card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
-        .reason-badge { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.8); border: 1px solid var(--reason); color: var(--reason); padding: 4px 10px; border-radius: 50px; font-size: 10px; font-weight: 900; letter-spacing: 0.5px; z-index: 5; }
+        .reason-tag { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.85); color: var(--reason); font-size: 10px; font-weight: 900; padding: 4px 12px; border-radius: 50px; border: 1px solid var(--reason); backdrop-filter: blur(4px); }
 
-        /* AI Status */
-        #ai-status { position: fixed; bottom: 20px; right: 20px; background: #000; padding: 10px 20px; border-radius: 50px; border: 1px solid var(--border); font-family: 'JetBrains Mono'; font-size: 10px; color: var(--accent); z-index: 2000; }
-        .tag-pill { display: inline-block; padding: 4px 10px; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--warn); border-radius: 20px; font-size: 10px; margin: 2px; color: var(--warn); cursor: pointer; }
+        #ai-status { position: fixed; bottom: 20px; right: 20px; background: #000; padding: 8px 18px; border-radius: 50px; border: 1px solid var(--border); font-family: 'JetBrains Mono'; font-size: 10px; color: var(--accent); z-index: 2000; pointer-events: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <aside>
     <div class="logo" onclick="nav('home')">DivTube</div>
-    <div id="account-pill-container" style="margin-bottom:20px;"></div>
+    <div id="account-pill-container" style="margin-bottom: 2rem;"></div>
 
-    <div class="nav-item active" onclick="nav('home')">📡 Neural Feed</div>
-    <div class="nav-item" onclick="nav('settings')">⚙️ AI Core</div>
+    <div class="nav-item active" id="nav-home" onclick="nav('home')">📡 Neural Feed</div>
+    <div class="nav-item" id="nav-map" onclick="nav('map')">🧠 Neural Map</div>
+    <div class="nav-item" id="nav-settings" onclick="nav('settings')">⚙️ AI Core</div>
 
-    <div style="margin-top:auto; padding:15px; background:rgba(255,255,255,0.02); border-radius:15px; border: 1px solid var(--border);">
-        <div style="font-size:10px; font-weight:900; color:#555; margin-bottom:8px;">AI BLACKLIST</div>
-        <div id="blacklist-tags"></div>
-        <input type="text" id="blackInput" placeholder="+ add block..." style="width:100%; background:none; border:none; border-bottom:1px solid #333; color:white; font-size:11px; padding:5px 0; outline:none;" onkeydown="if(event.key==='Enter') addBlacklist()">
+    <div style="margin-top:auto; padding:15px; background:rgba(255,255,255,0.02); border-radius:18px; border: 1px solid var(--border);">
+        <div style="font-size:10px; font-weight:900; color:#555; margin-bottom:10px; letter-spacing:1px;">ACTIVE FILTERS</div>
+        <div id="filter-list" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
     </div>
 </aside>
 
@@ -63,24 +66,39 @@
 
 <main>
     <div id="page-home" class="page active-page">
-        <input type="text" id="searchBox" placeholder="Query the neural network..." style="width:100%; background:#000; border:1px solid var(--border); color:white; padding:20px 30px; border-radius:50px; font-size:1.1rem; outline:none; margin-bottom: 2rem;" onkeydown="if(event.key==='Enter') runAISearch()">
+        <input type="text" id="searchBox" placeholder="Inject Global Intent..." style="width:100%; background:rgba(255,255,255,0.03); border:1px solid var(--border); color:white; padding:22px 35px; border-radius:100px; font-size:1.1rem; outline:none; margin-bottom: 1rem;" onkeydown="if(event.key==='Enter') runAISearch()">
         <div id="grid" class="video-grid"></div>
     </div>
 
+    <div id="page-map" class="page">
+        <h1 style="font-weight:900; font-size:2.5rem; margin:0;">Neural Topology</h1>
+        <p style="color:#666; margin-bottom:2rem;">Visualization of the Python engine's current decision-making weights.</p>
+        <div id="map-container"></div>
+    </div>
+
     <div id="page-settings" class="page">
-        <h1>AI Core</h1>
-        <input type="password" id="ytKey" placeholder="YouTube API Key" style="width:100%; background:#000; border:1px solid var(--border); color:white; padding:15px; border-radius:12px; margin-bottom:10px;">
-        <button onclick="saveCore()" style="background:var(--primary); color:white; border:none; padding:12px 30px; border-radius:12px; cursor:pointer; font-weight:800;">SYNC ENGINE</button>
+        <h1 style="font-weight:900; font-size:2.5rem; margin:0;">AI Core Parameters</h1>
+        <div style="margin-top:3rem; max-width: 600px; display:flex; flex-direction:column; gap:2rem;">
+            <div>
+                <label style="font-size:11px; font-weight:900; color:var(--primary); display:block; margin-bottom:10px;">YOUTUBE_API_KEY</label>
+                <input type="password" id="ytKey" placeholder="Paste your API key here..." style="width:100%; background:#000; border:1px solid var(--border); color:white; padding:15px; border-radius:12px;">
+            </div>
+            <div>
+                <label style="font-size:11px; font-weight:900; color:var(--warn); display:block; margin-bottom:10px;">DANGER ZONE</label>
+                <button onclick="clearBrain()" style="background:rgba(239, 68, 68, 0.1); border:1px solid var(--warn); color:var(--warn); padding:12px 25px; border-radius:12px; font-weight:800; cursor:pointer;">PURGE BRAIN WEIGHTS</button>
+            </div>
+            <button onclick="saveCore()" style="background:var(--primary); color:white; border:none; padding:18px; border-radius:15px; font-weight:900; font-size:1rem; cursor:pointer; box-shadow: 0 10px 30px rgba(139,92,246,0.3);">SYNC & REBOOT ENGINE</button>
+        </div>
     </div>
 
     <div id="page-watch" class="page">
-        <div class="theater-container" id="theater-mount"></div>
-        <div class="watch-meta">
-            <h1 id="t-title" style="margin:0 0 10px 0; font-size:2.2rem; font-weight:900;"></h1>
-            <div style="display:flex; gap:15px;">
-                <button onclick="nav('home')" style="background:rgba(255,255,255,0.05); border:none; color:#888; padding:12px 25px; border-radius:12px; cursor:pointer; font-weight:700;">← EXIT THEATER</button>
-                <button id="like-btn" onclick="aiLearn()" style="background:var(--primary); border:none; color:white; padding:12px 30px; border-radius:12px; cursor:pointer; font-weight:800;">🔥 TRAIN NEURAL WEIGHT</button>
+        <div class="theater-viewport" id="theater-mount"></div>
+        <div class="watch-details">
+            <div style="max-width:70%;">
+                <h1 id="t-title" style="margin:0; font-size:2rem; font-weight:900; letter-spacing:-1px;"></h1>
+                <button onclick="nav('home')" style="background:none; border:none; color:var(--primary); padding:10px 0; cursor:pointer; font-weight:900; font-size:1rem;">← BACK TO NEURAL FEED</button>
             </div>
+            <button id="train-btn" onclick="aiLearn()" style="background:white; color:black; border:none; padding:18px 40px; border-radius:12px; font-weight:900; cursor:pointer;">TRAIN NEURAL PATH</button>
         </div>
     </div>
 </main>
@@ -93,35 +111,19 @@ class SovereignAI:
     def rank(self, candidates_json, brain_json):
         candidates = json.loads(candidates_json)
         brain = json.loads(brain_json)
-        
         weights = brain.get("weights", {})
-        blacklist = [b.lower() for b in brain.get("blacklist", [])]
         locks = [l.lower() for l in brain.get("locks", [])]
         
         ranked = []
         for v in candidates:
-            title = v['title'].lower()
-            cid = v['channelId']
+            score = weights.get(v['channelId'], {}).get('points', 1.0)
+            reason = "Exploration"
             
-            # 1. Neural Purge (Blacklist)
-            if any(word in title for word in blacklist):
-                continue
-                
-            # 2. Reasoning Logic
-            reason = "Discovery"
-            score = 1.0
-            
-            # Weight from channel history
-            channel_weight = weights.get(cid, {}).get('points', 1.0)
-            if channel_weight > 1.0:
-                score *= channel_weight
-                reason = f"Channel Score: {channel_weight:.1f}"
-                
-            # Weight from Topic Locks
+            # Match Logic
             for lock in locks:
-                if lock in title:
-                    score *= 5.0
-                    reason = f"Neural Match: '{lock}'"
+                if lock in v['title'].lower():
+                    score *= 10.0
+                    reason = f"Lock: {lock}"
             
             v['score'] = score
             v['reason'] = reason
@@ -138,85 +140,98 @@ window.document.getElementById("ai-status").innerText = "NEURAL_ENGINE_READY"
 <script>
 let currentUser = localStorage.getItem('div_user_active') || 'Main';
 let db = {};
+let lastResults = [];
 
 function boot() {
     const raw = localStorage.getItem(`div_brain_${currentUser}`);
-    db = raw ? JSON.parse(raw) : { vault: { key: "" }, brain: { weights: {}, blacklist: [], locks: [] } };
+    db = raw ? JSON.parse(raw) : { vault: { key: "" }, brain: { weights: {}, locks: ["AI", "Tech", "Science"] } };
+    document.getElementById('ytKey').value = db.vault.key;
     renderUI();
 }
 
 function renderUI() {
-    const bl = document.getElementById('blacklist-tags');
-    bl.innerHTML = "";
-    (db.brain.blacklist || []).forEach(word => {
-        const s = document.createElement('span'); s.className = 'tag-pill';
-        s.innerText = `× ${word}`;
-        s.onclick = () => { db.brain.blacklist = db.brain.blacklist.filter(w => w !== word); save(); renderUI(); };
-        bl.appendChild(s);
+    const fList = document.getElementById('filter-list');
+    fList.innerHTML = "";
+    db.brain.locks.forEach(l => {
+        const s = document.createElement('span');
+        s.style = "background:rgba(139,92,246,0.1); color:var(--primary); border:1px solid var(--primary); padding:3px 10px; border-radius:50px; font-size:10px; font-weight:900;";
+        s.innerText = l;
+        fList.appendChild(s);
     });
-}
-
-function addBlacklist() {
-    const val = document.getElementById('blackInput').value;
-    if(val) {
-        if(!db.brain.blacklist) db.brain.blacklist = [];
-        db.brain.blacklist.push(val);
-        document.getElementById('blackInput').value = "";
-        save(); renderUI();
-    }
 }
 
 async function runAISearch() {
-    document.getElementById('ai-status').innerText = "AI_INFERENCE...";
+    document.getElementById('ai-status').innerText = "INFERENCE_RUNNING...";
     const q = document.getElementById('searchBox').value;
-    const r = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}&maxResults=24&type=video&key=${db.vault.key}`);
+    const r = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}&maxResults=30&type=video&key=${db.vault.key}`);
     const d = await r.json();
     
     const raw = d.items.map(i => ({ id: i.id.videoId, channelId: i.snippet.channelId, title: i.snippet.title, thumb: i.snippet.thumbnails.high.url }));
-    
-    // Process through Python Engine
-    const ranked = JSON.parse(window.pyRanker(JSON.stringify(raw), JSON.stringify(db.brain)));
+    lastResults = JSON.parse(window.pyRanker(JSON.stringify(raw), JSON.stringify(db.brain)));
     
     const grid = document.getElementById('grid'); grid.innerHTML = "";
-    ranked.forEach(v => {
+    lastResults.forEach(v => {
         const c = document.createElement('div'); c.className = 'card';
-        c.innerHTML = `
-            <div class="reason-badge">🧠 ${v.reason}</div>
-            <img src="${v.thumb}">
-            <div style="padding:15px; font-weight:800; font-size:0.95rem; line-height:1.4;">${v.title}</div>
-        `;
+        c.innerHTML = `<div class="reason-tag">🧠 ${v.reason}</div><img src="${v.thumb}"><div style="padding:18px; font-weight:800; font-size:0.95rem;">${v.title}</div>`;
         c.onclick = () => openTheater(v);
         grid.appendChild(c);
     });
+    
+    if(document.getElementById('page-map').classList.contains('active-page')) renderMap();
     document.getElementById('ai-status').innerText = "NEURAL_ENGINE_READY";
+}
+
+function renderMap() {
+    const container = document.getElementById('map-container');
+    container.innerHTML = "";
+    const width = container.clientWidth, height = container.clientHeight;
+    
+    const nodes = [{id: "BRAIN", size: 20, color: "var(--primary)"}];
+    const links = [];
+    
+    lastResults.slice(0, 12).forEach(v => {
+        nodes.push({id: v.title.substring(0, 20), size: 5, color: "#fff"});
+        links.push({source: "BRAIN", target: v.title.substring(0, 20)});
+    });
+
+    const svg = d3.select("#map-container").append("svg").attr("width", width).attr("height", height);
+    const simulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(d => d.id).distance(150))
+        .force("charge", d3.forceManyBody().strength(-300))
+        .force("center", d3.forceCenter(width / 2, height / 2));
+
+    const link = svg.append("g").selectAll("line").data(links).enter().append("line").attr("class", "link");
+    const node = svg.append("g").selectAll("circle").data(nodes).enter().append("circle")
+        .attr("r", d => d.size).attr("fill", d => d.color).call(d3.drag().on("start", dragstart).on("drag", dragged).on("end", dragend));
+
+    simulation.on("tick", () => {
+        link.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+        node.attr("cx", d => d.x).attr("cy", d => d.y);
+    });
+
+    function dragstart(event) { if (!event.active) simulation.alphaTarget(0.3).restart(); event.subject.fx = event.subject.x; event.subject.fy = event.subject.y; }
+    function dragged(event) { event.subject.fx = event.x; event.subject.fy = event.y; }
+    function dragend(event) { if (!event.active) simulation.alphaTarget(0); event.subject.fx = null; event.subject.fy = null; }
 }
 
 function openTheater(v) {
     nav('watch');
-    document.getElementById('theater-mount').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&modestbranding=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+    document.getElementById('theater-mount').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${v.id}?autoplay=1&modestbranding=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
     document.getElementById('t-title').innerText = v.title;
-    
-    if(!db.brain.weights[v.channelId]) db.brain.weights[v.channelId] = { points: 1.0 };
-    db.brain.weights[v.channelId].points += 0.5;
-    save();
-}
-
-function aiLearn() {
-    // Manually increase weight in the Python Engine
-    const currentCid = db.brain.weights; // Simplified for demo
-    // Training Logic Here...
-    document.getElementById('like-btn').innerText = "✅ WEIGHT UPDATED";
-    save();
 }
 
 function nav(p) {
     document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active-page'));
+    document.querySelectorAll('.nav-item').forEach(ni => ni.classList.remove('active'));
     document.getElementById(`page-${p}`).classList.add('active-page');
-    if(p !== 'watch') document.getElementById('theater-mount').innerHTML = ""; 
+    if(document.getElementById(`nav-${p}`)) document.getElementById(`nav-${p}`).classList.add('active');
+    if(p === 'map') renderMap();
+    if(p !== 'watch') document.getElementById('theater-mount').innerHTML = "";
 }
 
-function save() { localStorage.setItem(`div_brain_${currentUser}`, JSON.stringify(db)); }
 function saveCore() { db.vault.key = document.getElementById('ytKey').value; save(); location.reload(); }
+function clearBrain() { if(confirm("Purge all neural history?")) { db.brain.weights = {}; save(); location.reload(); } }
+function save() { localStorage.setItem(`div_brain_${currentUser}`, JSON.stringify(db)); }
 boot();
 </script>
 </body>
