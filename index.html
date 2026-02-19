@@ -4,7 +4,6 @@
     <meta charset="utf-8"/>
     <title>DivTube Sovereign</title>
     <link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%238b5cf6'/><path d='M35 30l40 20-40 20z' fill='white'/></svg>">
-    
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     
@@ -17,46 +16,36 @@
         * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
 
-        aside { width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 2rem 1.5rem; display: flex; flex-direction: column; flex-shrink: 0; z-index: 100; }
-        .logo-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 3rem; cursor: pointer; }
-        .logo-icon { width: 32px; height: 32px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(139, 92, 246, 0.4); }
-        .logo-text { font-weight: 800; font-size: 1.4rem; letter-spacing: -1px; background: linear-gradient(to right, #fff, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        aside { width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 2rem 1.5rem; display: flex; flex-direction: column; flex-shrink: 0; }
+        .logo-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 3rem; }
+        .logo-icon { width: 32px; height: 32px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .logo-text { font-weight: 800; font-size: 1.4rem; background: linear-gradient(to right, #fff, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         .nav-item { padding: 14px 18px; border-radius: 12px; cursor: pointer; color: rgba(255,255,255,0.5); font-weight: 600; margin-bottom: 8px; transition: 0.2s; display: flex; align-items: center; gap: 12px; }
         .nav-item.active { background: rgba(139, 92, 246, 0.15); color: var(--primary); border: 1px solid rgba(139, 92, 246, 0.1); }
 
         main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .top-bar { padding: 1.2rem 2.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 2rem; background: rgba(5,5,7,0.8); backdrop-filter: blur(20px); z-index: 50; }
-        .search-input { flex: 1; background: var(--card); border: 1px solid var(--border); color: white; padding: 14px 24px; border-radius: 16px; outline: none; transition: 0.3s; }
+        .top-bar { padding: 1.2rem 2.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 2rem; background: rgba(5,5,7,0.8); backdrop-filter: blur(20px); }
+        .search-input { flex: 1; background: var(--card); border: 1px solid var(--border); color: white; padding: 14px 24px; border-radius: 16px; outline: none; }
 
         .content-area { flex: 1; overflow-y: auto; padding: 2.5rem; }
         .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
         
         .card { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); transition: 0.4s; cursor: pointer; }
-        .card:hover { transform: translateY(-8px); border-color: var(--primary); }
         .card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
         .card-info { padding: 1.2rem; }
-        .card-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 8px; height: 2.8rem; overflow: hidden; }
-        .neural-insight { font-size: 0.7rem; background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 4px 8px; border-radius: 6px; font-weight: 700; display: inline-block; }
+        .neural-insight { font-size: 0.7rem; background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 4px 8px; border-radius: 6px; font-weight: 700; margin-top: 8px; display: inline-block; }
 
-        .topic-cloud { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 2rem; }
-        .topic-pill { padding: 6px 14px; background: var(--glass); border-radius: 100px; font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.6); }
-
-        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; transition: 0.5s; }
+        #boot-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
         .loader { width: 30px; height: 30px; border: 3px solid var(--glass); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Tuning Sliders */
-        .tuning-section { margin-top: 2rem; padding: 1rem; background: var(--glass); border-radius: 16px; border: 1px solid var(--border); }
-        input[type=range] { width: 100%; accent-color: var(--primary); margin: 10px 0; }
     </style>
 </head>
 <body>
 
 <div id="boot-screen">
     <div class="loader"></div>
-    <div style="color:var(--primary); font-size:0.7rem; letter-spacing:2px; font-weight:800;">CALIBRATING_NEURAL_WEIGHTS</div>
-    <div id="boot-status" style="color:rgba(255,255,255,0.3); font-size:10px;">Downloading NumPy & Scikit-Learn...</div>
+    <div id="boot-text" style="color:var(--primary); font-size:0.7rem; letter-spacing:2px; font-weight:800;">INITIALIZING_VIRTUAL_FILESYSTEM</div>
 </div>
 
 <aside>
@@ -66,21 +55,18 @@
     </div>
     <nav>
         <div class="nav-item" id="link-home" onclick="app.nav('/home')">📡 Feed</div>
-        <div class="nav-item" id="link-search" onclick="app.nav('/search')" style="display:none;">🔍 Results</div>
+        <div class="nav-item" id="link-search" onclick="app.nav('/search')" style="display:none;">🔍 Current</div>
         <div class="nav-item" id="link-history" onclick="app.nav('/history')">📜 History</div>
-        <div class="nav-item" id="link-settings" onclick="app.nav('/settings')">⚙️ AI Config</div>
+        <div class="nav-item" id="link-settings" onclick="app.nav('/settings')">⚙️ AI Tuning</div>
     </nav>
 </aside>
 
 <main>
     <div class="top-bar">
-        <input type="text" class="search-input" id="globalSearch" placeholder="What's the vibe?" onkeydown="if(event.key==='Enter') app.search(this.value)">
+        <input type="text" class="search-input" id="globalSearch" placeholder="Describe your interest..." onkeydown="if(event.key==='Enter') app.search(this.value)">
     </div>
     <div class="content-area" id="main-scroll">
-        <section id="view-home" class="view" style="display:none;">
-            <div id="topic-cloud" class="topic-cloud"></div>
-            <div id="home-grid" class="video-grid"></div>
-        </section>
+        <section id="view-home" class="view" style="display:none;"><div id="home-grid" class="video-grid"></div></section>
         <section id="view-search" class="view" style="display:none;"><div id="search-grid" class="video-grid"></div></section>
         <section id="view-history" class="view" style="display:none;"><div id="history-grid" class="video-grid"></div></section>
         <section id="view-watch" class="view" style="display:none;">
@@ -90,28 +76,16 @@
                         <div style="position:relative; padding-top:56.25%;"><div id="theater-mount" style="position:absolute; inset:0;"></div></div>
                     </div>
                     <h1 id="t-title" style="margin:1.5rem 0 1rem; font-size:1.5rem;"></h1>
-                    <div id="t-desc" style="background:var(--card); padding:1rem; border-radius:12px; color:#aaa; font-size:0.9rem;"></div>
                     <div id="comments-mount" style="margin-top:2rem;"></div>
                 </div>
                 <div id="rec-sidebar"></div>
             </div>
         </section>
         <section id="view-settings" class="view" style="display:none;">
-            <div style="max-width:500px; background:var(--card); padding:2rem; border-radius:24px;">
-                <h3>Neural Core Tuning</h3>
-                <div class="tuning-section">
-                    <label style="font-size:0.8rem; font-weight:800;">CONTEXT BIAS (Current Video vs History)</label>
-                    <input type="range" id="param-bias" min="0" max="10" value="6" onchange="app.saveTuning()">
-                    <div style="display:flex; justify-content:space-between; font-size:10px; opacity:0.5;"><span>HISTORY</span><span>CONTEXT</span></div>
-                </div>
-                <div class="tuning-section">
-                    <label style="font-size:0.8rem; font-weight:800;">TOPIC DIVERSITY</label>
-                    <input type="range" id="param-diversity" min="1" max="100" value="50" onchange="app.saveTuning()">
-                </div>
-                <div style="margin-top:2rem;">
-                    <input type="password" id="ytKey" class="search-input" style="width:100%;" placeholder="YouTube API Key">
-                    <button onclick="app.saveKey()" style="width:100%; margin-top:1rem; padding:12px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:800; cursor:pointer;">REBOOT AI ENGINE</button>
-                </div>
+            <div style="max-width:460px; background:var(--card); padding:2rem; border-radius:24px;">
+                <h3>Core Configuration</h3>
+                <input type="password" id="ytKey" class="search-input" style="width:100%; margin-top:1rem;" placeholder="API Key">
+                <button onclick="app.saveKey()" style="width:100%; margin-top:1rem; padding:12px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:800; cursor:pointer;">SAVE & RELOAD</button>
             </div>
         </section>
     </div>
@@ -123,82 +97,69 @@
 
 <script type="py">
 import json
-import numpy as np
-import micropip
+import asyncio
 from js import window, document
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
-async def setup():
-    # Force-install dependencies if Pyodide missed them
+# Critical fix: Asynchronous manual installation
+async def initialize_engine():
+    status = document.getElementById("boot-text")
     try:
+        import micropip
+        status.innerText = "INSTALLING_NUMPY..."
         await micropip.install("numpy")
+        status.innerText = "INSTALLING_SCIKIT_LEARN..."
         await micropip.install("scikit-learn")
-    except:
-        pass
+        
+        # Now import the heavy hitters
+        import numpy as np
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        from sklearn.metrics.pairwise import cosine_similarity
+        
+        status.innerText = "CALIBRATING_VECTORS..."
+        
+        class Ranker:
+            def __init__(self):
+                self.vectorizer = TfidfVectorizer(stop_words='english')
+            
+            def process(self, pool_json, brain_json, current_json=None):
+                pool = json.loads(pool_json)
+                brain = json.loads(brain_json)
+                if not pool: return json.dumps({"list": []})
+                
+                titles = [v['title'] for v in pool]
+                tfidf_matrix = self.vectorizer.fit_transform(titles)
+                
+                # History vector
+                history = brain.get("history", [])
+                user_scores = np.zeros(len(pool))
+                if history:
+                    h_vec = self.vectorizer.transform([" ".join([h['title'] for h in history])])
+                    user_scores = cosine_similarity(h_vec, tfidf_matrix).flatten()
+                
+                for i, v in enumerate(pool):
+                    v['score'] = float(user_scores[i])
+                    v['reason'] = "Neural match" if v['score'] > 0.1 else "Discovery"
+                
+                pool.sort(key=lambda x: x['score'], reverse=True)
+                return json.dumps({"list": pool})
 
-class SovereignRanker:
-    def __init__(self):
-        self.vectorizer = TfidfVectorizer(stop_words='english', max_features=500)
+        window.pyRanker = Ranker().process
+        window.app.onEngineReady()
+        
+    except Exception as e:
+        status.innerText = f"BOOT_ERROR: {str(e)}"
 
-    def process(self, pool_json, brain_json, current_json=None, bias=6.0):
-        pool = json.loads(pool_json)
-        brain = json.loads(brain_json)
-        if not pool: return json.dumps({"list": [], "topics": []})
-
-        all_text = [v['title'] for v in pool]
-        tfidf_matrix = self.vectorizer.fit_transform(all_text)
-        feature_names = self.vectorizer.get_feature_names_out()
-
-        # Get Topics
-        sums = tfidf_matrix.sum(axis=0).A1
-        top_topics = [feature_names[i] for i in sums.argsort()[-10:][::-1]]
-
-        # User Profile Vector
-        history = brain.get("history", [])
-        user_scores = np.zeros(len(pool))
-        if history:
-            hist_vec = self.vectorizer.transform([" ".join([h['title'] for h in history])])
-            user_scores = cosine_similarity(hist_vec, tfidf_matrix).flatten()
-
-        # Context Vector
-        context_scores = np.zeros(len(pool))
-        if current_json:
-            curr = json.loads(current_json)
-            curr_vec = self.vectorizer.transform([curr['title']])
-            context_scores = cosine_similarity(curr_vec, tfidf_matrix).flatten()
-
-        # Dynamic Scoring based on user slider (bias)
-        ctx_weight = float(bias)
-        hist_weight = 10.0 - ctx_weight
-
-        for i, v in enumerate(pool):
-            v['score'] = float((context_scores[i] * ctx_weight) + (user_scores[i] * hist_weight))
-            if context_scores[i] > 0.2: v['reason'] = "Neural Context Match"
-            elif user_scores[i] > 0.2: v['reason'] = f"Inspired by {top_topics[0]}"
-            else: v['reason'] = "Discovery Seed"
-
-        pool.sort(key=lambda x: x['score'], reverse=True)
-        return json.dumps({"list": pool, "topics": top_topics})
-
-# Initialize and export
-engine = SovereignRanker()
-window.pyRanker = engine.process
-window.app.onEngineReady()
+# Execute the async setup
+asyncio.ensure_future(initialize_engine())
 </script>
 
 <script>
 const app = {
-    db: JSON.parse(localStorage.getItem('div_v42')) || { 
-        key: "", pool: [], brain: { subs: [], history: [] }, 
-        tuning: { bias: 6, diversity: 50 } 
-    },
+    db: JSON.parse(localStorage.getItem('div_v42')) || { key: "", pool: [], brain: { history: [] } },
     engineReady: false,
 
     init() {
         document.getElementById('ytKey').value = this.db.key;
-        document.getElementById('param-bias').value = this.db.tuning.bias;
-        document.getElementById('param-diversity').value = this.db.tuning.diversity;
         window.onpopstate = () => this.route();
     },
 
@@ -215,8 +176,7 @@ const app = {
         const route = window.location.pathname.replace(/^\/|\/$/g, '') || 'home';
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        if (this.db.key === "") { this.showView('settings'); return; }
-
+        
         if (route === 'settings') this.showView('settings');
         else if (route === 'watch') document.getElementById('view-watch').style.display = 'block';
         else if (route === 'search') { this.showView('search'); this.renderSearch(); }
@@ -226,19 +186,18 @@ const app = {
 
     showView(id) {
         document.getElementById(`view-${id}`).style.display = 'block';
-        const link = document.getElementById(`link-${id}`);
-        if (link) link.classList.add('active');
+        if (document.getElementById(`link-${id}`)) document.getElementById(`link-${id}`).classList.add('active');
     },
 
     async search(q) {
         if (!q || !this.db.key) return;
-        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=30&type=video&key=${this.db.key}`);
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&maxResults=25&type=video&key=${this.db.key}`);
         const data = await res.json();
         this.searchBuffer = data.items.map(i => ({
             id: i.id.videoId, channelId: i.snippet.channelId, channelTitle: i.snippet.channelTitle,
-            title: i.snippet.title, thumb: i.snippet.thumbnails.high.url, desc: i.snippet.description
+            title: i.snippet.title, thumb: i.snippet.thumbnails.high.url
         }));
-        this.db.pool = [...this.searchBuffer, ...this.db.pool].slice(0, 300);
+        this.db.pool = [...this.searchBuffer, ...this.db.pool].slice(0, 200);
         this.save();
         document.getElementById('link-search').style.display = 'flex';
         this.nav('/search');
@@ -252,25 +211,20 @@ const app = {
         this.nav('/watch');
         document.getElementById('theater-mount').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1" allowfullscreen style="width:100%; height:100%; border:none;"></iframe>`;
         document.getElementById('t-title').innerText = video.title;
-        document.getElementById('t-desc').innerText = video.desc;
-        this.renderWatchRecs(video);
+        this.renderWatchRecs();
     },
 
-    renderWatchRecs(curr) {
-        const data = JSON.parse(window.pyRanker(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain), JSON.stringify(curr), this.db.tuning.bias));
-        document.getElementById('rec-sidebar').innerHTML = data.list.slice(0, 10).map(v => `
+    renderWatchRecs() {
+        const data = JSON.parse(window.pyRanker(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain)));
+        document.getElementById('rec-sidebar').innerHTML = data.list.slice(0, 8).map(v => `
             <div style="display:flex; gap:12px; cursor:pointer; margin-bottom:15px;" onclick="app.play('${v.id}')">
-                <img src="${v.thumb}" style="width:140px; aspect-ratio:16/9; border-radius:12px; object-fit:cover;">
-                <div>
-                    <div style="font-size:0.8rem; font-weight:700; color:#fff;">${v.title.substring(0,40)}...</div>
-                    <div class="neural-insight">${v.reason}</div>
-                </div>
+                <img src="${v.thumb}" style="width:120px; border-radius:8px;">
+                <div style="font-size:0.75rem; font-weight:700;">${v.title.substring(0,40)}...</div>
             </div>`).join('');
     },
 
     renderHome() {
-        const data = JSON.parse(window.pyRanker(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain), null, this.db.tuning.bias));
-        document.getElementById('topic-cloud').innerHTML = data.topics.map(t => `<div class="topic-pill">#${t.toUpperCase()}</div>`).join('');
+        const data = JSON.parse(window.pyRanker(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain)));
         this.fillGrid('home-grid', data.list);
     },
 
@@ -279,19 +233,14 @@ const app = {
             <div class="card" onclick="app.play('${v.id}')">
                 <img src="${v.thumb}">
                 <div class="card-info">
-                    <div class="card-title">${v.title}</div>
-                    <div class="neural-insight">${v.reason || 'Calculated Match'}</div>
+                    <div style="font-weight:700; font-size:0.9rem;">${v.title}</div>
+                    <div class="neural-insight">${v.reason}</div>
                 </div>
             </div>`).join('');
     },
 
     renderSearch() { this.fillGrid('search-grid', this.searchBuffer || []); },
     renderHistory() { this.fillGrid('history-grid', this.db.brain.history); },
-    saveTuning() {
-        this.db.tuning.bias = document.getElementById('param-bias').value;
-        this.db.tuning.diversity = document.getElementById('param-diversity').value;
-        this.save();
-    },
     saveKey() { this.db.key = document.getElementById('ytKey').value; this.save(); location.reload(); },
     save() { localStorage.setItem('div_v42', JSON.stringify(this.db)); }
 };
