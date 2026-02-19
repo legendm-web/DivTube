@@ -1,7 +1,6 @@
 DivTube
 
-Watch purified YouTube videos with no ads and comments. Just focus. 
-
+Have Infinite Sovereignty over your viewing experience
 
 ## Run with docker:
 
