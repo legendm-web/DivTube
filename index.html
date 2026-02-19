@@ -12,7 +12,7 @@
         :root {
             --bg: #050507; --sidebar: #0a0a0f; --card: #12121a;
             --primary: #8b5cf6; --text: #ffffff; --border: rgba(255,255,255,0.08);
-            --accent: #3b82f6; --glass: rgba(255, 255, 255, 0.03);
+            --glass: rgba(255, 255, 255, 0.03);
         }
         * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
@@ -42,12 +42,13 @@
         .topic-cloud { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 2rem; }
         .topic-pill { padding: 6px 14px; background: var(--glass); border-radius: 100px; font-size: 0.75rem; font-weight: 700; color: rgba(255,255,255,0.6); }
 
-        .watch-grid { display: grid; grid-template-columns: 1fr 400px; gap: 2.5rem; }
-        .theater-box { border-radius: 24px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
-        
         #boot-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; transition: 0.5s; }
         .loader { width: 30px; height: 30px; border: 3px solid var(--glass); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Tuning Sliders */
+        .tuning-section { margin-top: 2rem; padding: 1rem; background: var(--glass); border-radius: 16px; border: 1px solid var(--border); }
+        input[type=range] { width: 100%; accent-color: var(--primary); margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -55,7 +56,7 @@
 <div id="boot-screen">
     <div class="loader"></div>
     <div style="color:var(--primary); font-size:0.7rem; letter-spacing:2px; font-weight:800;">CALIBRATING_NEURAL_WEIGHTS</div>
-    <div id="boot-status" style="color:rgba(255,255,255,0.3); font-size:10px;">Loading Scikit-Learn...</div>
+    <div id="boot-status" style="color:rgba(255,255,255,0.3); font-size:10px;">Downloading NumPy & Scikit-Learn...</div>
 </div>
 
 <aside>
@@ -67,13 +68,13 @@
         <div class="nav-item" id="link-home" onclick="app.nav('/home')">📡 Feed</div>
         <div class="nav-item" id="link-search" onclick="app.nav('/search')" style="display:none;">🔍 Results</div>
         <div class="nav-item" id="link-history" onclick="app.nav('/history')">📜 History</div>
-        <div class="nav-item" id="link-settings" onclick="app.nav('/settings')">⚙️ Engine</div>
+        <div class="nav-item" id="link-settings" onclick="app.nav('/settings')">⚙️ AI Config</div>
     </nav>
 </aside>
 
 <main>
     <div class="top-bar">
-        <input type="text" class="search-input" id="globalSearch" placeholder="Inject intent..." onkeydown="if(event.key==='Enter') app.search(this.value)">
+        <input type="text" class="search-input" id="globalSearch" placeholder="What's the vibe?" onkeydown="if(event.key==='Enter') app.search(this.value)">
     </div>
     <div class="content-area" id="main-scroll">
         <section id="view-home" class="view" style="display:none;">
@@ -83,43 +84,64 @@
         <section id="view-search" class="view" style="display:none;"><div id="search-grid" class="video-grid"></div></section>
         <section id="view-history" class="view" style="display:none;"><div id="history-grid" class="video-grid"></div></section>
         <section id="view-watch" class="view" style="display:none;">
-            <div class="watch-grid">
-                <div class="player-stack">
-                    <div class="theater-box"><div style="position:relative; padding-top:56.25%;"><div id="theater-mount" style="position:absolute; inset:0;"></div></div></div>
-                    <h1 id="t-title" style="margin:2rem 0 1rem; font-size:1.8rem; font-weight:800;"></h1>
-                    <div id="t-desc" style="background:var(--card); padding:1.5rem; border-radius:16px; font-size:0.9rem; color:#aaa; white-space:pre-wrap;"></div>
-                    <div id="comments-mount" style="margin-top:3rem;"></div>
+            <div style="display:grid; grid-template-columns: 1fr 400px; gap:2rem;">
+                <div>
+                    <div style="border-radius:24px; overflow:hidden; border:1px solid var(--border); background:#000;">
+                        <div style="position:relative; padding-top:56.25%;"><div id="theater-mount" style="position:absolute; inset:0;"></div></div>
+                    </div>
+                    <h1 id="t-title" style="margin:1.5rem 0 1rem; font-size:1.5rem;"></h1>
+                    <div id="t-desc" style="background:var(--card); padding:1rem; border-radius:12px; color:#aaa; font-size:0.9rem;"></div>
+                    <div id="comments-mount" style="margin-top:2rem;"></div>
                 </div>
                 <div id="rec-sidebar"></div>
             </div>
         </section>
         <section id="view-settings" class="view" style="display:none;">
-            <div style="max-width:460px; background:var(--card); padding:2.5rem; border-radius:24px;">
-                <input type="password" id="ytKey" class="search-input" style="width:100%;" placeholder="YouTube API Key">
-                <button onclick="app.saveKey()" style="width:100%; margin-top:1rem; padding:14px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:800; cursor:pointer;">REBOOT AI</button>
+            <div style="max-width:500px; background:var(--card); padding:2rem; border-radius:24px;">
+                <h3>Neural Core Tuning</h3>
+                <div class="tuning-section">
+                    <label style="font-size:0.8rem; font-weight:800;">CONTEXT BIAS (Current Video vs History)</label>
+                    <input type="range" id="param-bias" min="0" max="10" value="6" onchange="app.saveTuning()">
+                    <div style="display:flex; justify-content:space-between; font-size:10px; opacity:0.5;"><span>HISTORY</span><span>CONTEXT</span></div>
+                </div>
+                <div class="tuning-section">
+                    <label style="font-size:0.8rem; font-weight:800;">TOPIC DIVERSITY</label>
+                    <input type="range" id="param-diversity" min="1" max="100" value="50" onchange="app.saveTuning()">
+                </div>
+                <div style="margin-top:2rem;">
+                    <input type="password" id="ytKey" class="search-input" style="width:100%;" placeholder="YouTube API Key">
+                    <button onclick="app.saveKey()" style="width:100%; margin-top:1rem; padding:12px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:800; cursor:pointer;">REBOOT AI ENGINE</button>
+                </div>
             </div>
         </section>
     </div>
 </main>
 
 <script type="py" config>
-{
-    "packages": ["scikit-learn", "numpy"]
-}
+{ "packages": ["scikit-learn", "numpy", "micropip"] }
 </script>
 
 <script type="py">
 import json
 import numpy as np
+import micropip
 from js import window, document
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-class ExplainableRanker:
+async def setup():
+    # Force-install dependencies if Pyodide missed them
+    try:
+        await micropip.install("numpy")
+        await micropip.install("scikit-learn")
+    except:
+        pass
+
+class SovereignRanker:
     def __init__(self):
         self.vectorizer = TfidfVectorizer(stop_words='english', max_features=500)
 
-    def process(self, pool_json, brain_json, current_json=None):
+    def process(self, pool_json, brain_json, current_json=None, bias=6.0):
         pool = json.loads(pool_json)
         brain = json.loads(brain_json)
         if not pool: return json.dumps({"list": [], "topics": []})
@@ -128,64 +150,72 @@ class ExplainableRanker:
         tfidf_matrix = self.vectorizer.fit_transform(all_text)
         feature_names = self.vectorizer.get_feature_names_out()
 
+        # Get Topics
         sums = tfidf_matrix.sum(axis=0).A1
-        top_indices = sums.argsort()[-10:][::-1]
-        top_topics = [feature_names[i] for i in top_indices]
+        top_topics = [feature_names[i] for i in sums.argsort()[-10:][::-1]]
 
+        # User Profile Vector
         history = brain.get("history", [])
         user_scores = np.zeros(len(pool))
         if history:
             hist_vec = self.vectorizer.transform([" ".join([h['title'] for h in history])])
             user_scores = cosine_similarity(hist_vec, tfidf_matrix).flatten()
 
+        # Context Vector
         context_scores = np.zeros(len(pool))
         if current_json:
             curr = json.loads(current_json)
             curr_vec = self.vectorizer.transform([curr['title']])
             context_scores = cosine_similarity(curr_vec, tfidf_matrix).flatten()
 
+        # Dynamic Scoring based on user slider (bias)
+        ctx_weight = float(bias)
+        hist_weight = 10.0 - ctx_weight
+
         for i, v in enumerate(pool):
-            v['score'] = float((context_scores[i] * 6.0) + (user_scores[i] * 4.0))
+            v['score'] = float((context_scores[i] * ctx_weight) + (user_scores[i] * hist_weight))
             if context_scores[i] > 0.2: v['reason'] = "Neural Context Match"
-            elif user_scores[i] > 0.2: v['reason'] = f"Based on interest in {top_topics[0]}"
-            else: v['reason'] = "Deep Feed Suggestion"
+            elif user_scores[i] > 0.2: v['reason'] = f"Inspired by {top_topics[0]}"
+            else: v['reason'] = "Discovery Seed"
 
         pool.sort(key=lambda x: x['score'], reverse=True)
         return json.dumps({"list": pool, "topics": top_topics})
 
-# Initialize and export to window
-engine = ExplainableRanker()
+# Initialize and export
+engine = SovereignRanker()
 window.pyRanker = engine.process
 window.app.onEngineReady()
 </script>
 
 <script>
 const app = {
-    db: JSON.parse(localStorage.getItem('div_v41')) || { key: "", pool: [], brain: { subs: [], history: [] } },
+    db: JSON.parse(localStorage.getItem('div_v42')) || { 
+        key: "", pool: [], brain: { subs: [], history: [] }, 
+        tuning: { bias: 6, diversity: 50 } 
+    },
     engineReady: false,
-    
+
     init() {
         document.getElementById('ytKey').value = this.db.key;
+        document.getElementById('param-bias').value = this.db.tuning.bias;
+        document.getElementById('param-diversity').value = this.db.tuning.diversity;
         window.onpopstate = () => this.route();
-        // Don't route yet! Wait for onEngineReady.
     },
 
     onEngineReady() {
         this.engineReady = true;
         document.getElementById('boot-screen').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('boot-screen').remove();
-            this.route(); // Now it's safe to call Python
-        }, 500);
+        setTimeout(() => { document.getElementById('boot-screen').remove(); this.route(); }, 500);
     },
 
     nav(path) { window.history.pushState({}, "", path); this.route(); },
 
     route() {
-        if(!this.engineReady) return; 
+        if(!this.engineReady) return;
         const route = window.location.pathname.replace(/^\/|\/$/g, '') || 'home';
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        if (this.db.key === "") { this.showView('settings'); return; }
 
         if (route === 'settings') this.showView('settings');
         else if (route === 'watch') document.getElementById('view-watch').style.display = 'block';
@@ -196,7 +226,8 @@ const app = {
 
     showView(id) {
         document.getElementById(`view-${id}`).style.display = 'block';
-        if (document.getElementById(`link-${id}`)) document.getElementById(`link-${id}`).classList.add('active');
+        const link = document.getElementById(`link-${id}`);
+        if (link) link.classList.add('active');
     },
 
     async search(q) {
@@ -226,7 +257,7 @@ const app = {
     },
 
     renderWatchRecs(curr) {
-        const data = JSON.parse(window.pyRanker(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain), JSON.stringify(curr)));
+        const data = JSON.parse(window.pyRanker(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain), JSON.stringify(curr), this.db.tuning.bias));
         document.getElementById('rec-sidebar').innerHTML = data.list.slice(0, 10).map(v => `
             <div style="display:flex; gap:12px; cursor:pointer; margin-bottom:15px;" onclick="app.play('${v.id}')">
                 <img src="${v.thumb}" style="width:140px; aspect-ratio:16/9; border-radius:12px; object-fit:cover;">
@@ -238,7 +269,7 @@ const app = {
     },
 
     renderHome() {
-        const data = JSON.parse(window.pyRanker(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain)));
+        const data = JSON.parse(window.pyRanker(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain), null, this.db.tuning.bias));
         document.getElementById('topic-cloud').innerHTML = data.topics.map(t => `<div class="topic-pill">#${t.toUpperCase()}</div>`).join('');
         this.fillGrid('home-grid', data.list);
     },
@@ -256,8 +287,13 @@ const app = {
 
     renderSearch() { this.fillGrid('search-grid', this.searchBuffer || []); },
     renderHistory() { this.fillGrid('history-grid', this.db.brain.history); },
+    saveTuning() {
+        this.db.tuning.bias = document.getElementById('param-bias').value;
+        this.db.tuning.diversity = document.getElementById('param-diversity').value;
+        this.save();
+    },
     saveKey() { this.db.key = document.getElementById('ytKey').value; this.save(); location.reload(); },
-    save() { localStorage.setItem('div_v41', JSON.stringify(this.db)); }
+    save() { localStorage.setItem('div_v42', JSON.stringify(this.db)); }
 };
 window.app = app; app.init();
 </script>
