@@ -12,90 +12,120 @@
     </script>
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #030305; --sidebar: #08080c; --card: #111116;
+            --bg: #020204; --sidebar: #06060a; --card: #0f0f15;
             --primary: #8b5cf6; --text: #f8fafc; --border: rgba(255,255,255,0.06);
-            --accent: #1e1b4b; --success: #22c55e;
+            --accent: #1e1b4b; --danger: #ef4444;
         }
-        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         body { margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
 
         /* Navigation */
         aside { width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 1.5rem; display: flex; flex-direction: column; flex-shrink: 0; }
-        .nav-item { padding: 12px 16px; border-radius: 10px; cursor: pointer; color: rgba(255,255,255,0.5); font-weight: 600; margin-bottom: 5px; transition: 0.2s; display: flex; align-items: center; gap: 12px; }
+        .nav-item { padding: 12px 16px; border-radius: 12px; cursor: pointer; color: rgba(255,255,255,0.5); font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 12px; }
         .nav-item:hover, .nav-item.active { background: var(--accent); color: var(--primary); }
-        .sub-item { font-size: 0.8rem; padding: 8px 16px; color: rgba(255,255,255,0.4); cursor: pointer; }
+        .logo { font-weight: 900; font-size: 1.5rem; margin-bottom: 2.5rem; color: var(--primary); cursor: pointer; }
 
-        /* Main Content */
+        /* Content Area */
         main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .top-bar { padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; gap: 1rem; align-items: center; }
-        .search-input { flex: 1; background: var(--card); border: 1px solid var(--border); color: white; padding: 12px 20px; border-radius: 12px; outline: none; border: 1px solid transparent; transition: 0.3s; }
-        .search-input:focus { border-color: var(--primary); background: #000; }
-
-        .viewport { flex: 1; overflow-y: auto; padding: 2rem; }
+        .search-input { flex: 1; background: var(--card); border: 1px solid var(--border); color: white; padding: 14px 24px; border-radius: 16px; outline: none; }
+        .viewport { flex: 1; overflow-y: auto; padding: 2rem; scroll-behavior: smooth; }
+        
+        /* Grid & Cards */
         .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
-
-        /* Components */
-        .card { background: var(--card); border-radius: 14px; overflow: hidden; border: 1px solid var(--border); transition: 0.3s; cursor: pointer; position: relative; }
-        .card:hover { transform: translateY(-4px); border-color: var(--primary); }
-        .card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+        .card { background: var(--card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; position: relative; }
+        .card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .thumb-wrap { position: relative; aspect-ratio: 16/9; }
+        .duration { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; }
         .card-meta { padding: 1rem; }
-        .card-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .card-chan { font-size: 0.75rem; color: var(--primary); font-weight: 600; display: flex; justify-content: space-between; }
+        .card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .chan-link { color: var(--primary); font-size: 0.8rem; font-weight: 600; }
 
-        /* Watch Layout */
-        .watch-grid { display: grid; grid-template-columns: 1fr 380px; gap: 2rem; }
-        .player-box { background: #000; border-radius: 18px; overflow: hidden; aspect-ratio: 16/9; border: 1px solid var(--border); }
-        .rec-item { display: flex; gap: 12px; margin-bottom: 1rem; cursor: pointer; transition: 0.2s; }
-        .rec-item:hover { opacity: 0.7; }
-        .rec-item img { width: 140px; border-radius: 8px; aspect-ratio: 16/9; object-fit: cover; }
+        /* In-Depth Settings Layout */
+        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .settings-box { background: var(--card); padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border); }
+        .settings-box h4 { margin: 0 0 1rem 0; color: var(--primary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+        label { display: block; font-size: 0.85rem; margin-bottom: 8px; opacity: 0.7; }
+        input[type="range"] { width: 100%; accent-color: var(--primary); margin-bottom: 1.5rem; }
+        .block-tag { display: inline-flex; align-items: center; background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; margin: 0 5px 5px 0; border: 1px solid rgba(239, 68, 68, 0.2); }
+        
+        /* Watch Mode */
+        .watch-layout { display: grid; grid-template-columns: 1fr 380px; gap: 2.5rem; }
+        .player-shell { background: #000; border-radius: 24px; overflow: hidden; aspect-ratio: 16/9; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
 
-        #boot { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: 0.5s; }
+        #boot { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-<div id="boot"><div style="color:var(--primary); font-weight:800; letter-spacing:4px; animation: pulse 1.5s infinite;">LOADING_SOVEREIGN_V50</div></div>
+<div id="boot"><div style="color:var(--primary); font-weight:800; letter-spacing:3px;">SYSTEM_INITIALIZING</div></div>
 
 <aside>
-    <div style="font-weight:900; font-size:1.5rem; margin-bottom:2rem;">DIV<span style="color:var(--primary)">TUBE</span></div>
+    <div class="logo" onclick="app.nav('/home')">DIVTUBE</div>
     <nav>
-        <div class="nav-item active" id="link-home" onclick="app.nav('/home')">🏠 Home</div>
+        <div class="nav-item active" id="link-home" onclick="app.nav('/home')">📡 Feed</div>
+        <div class="nav-item" id="link-liked" onclick="app.nav('/liked')">❤️ Liked</div>
         <div class="nav-item" id="link-history" onclick="app.nav('/history')">📜 History</div>
-        <div class="nav-item" id="link-subs" onclick="app.nav('/subs')">💎 Subscriptions</div>
-        <div class="nav-item" id="link-settings" onclick="app.nav('/settings')">⚙️ Engine</div>
+        <div class="nav-item" id="link-settings" onclick="app.nav('/settings')">🛠️ Settings</div>
     </nav>
-    <div style="margin-top:2rem; font-size:0.7rem; font-weight:800; color:rgba(255,255,255,0.2);">YOUR_CHANNELS</div>
-    <div id="sub-list"></div>
 </aside>
 
 <main>
     <div class="top-bar">
-        <input type="text" class="search-input" id="globalSearch" placeholder="Query the index..." onkeydown="if(event.key==='Enter') app.search(this.value)">
+        <input type="text" class="search-input" id="globalSearch" placeholder="Vector Search..." onkeydown="if(event.key==='Enter') app.search(this.value)">
     </div>
     <div class="viewport">
         <section id="view-home" class="view" style="display:none;"><div id="home-grid" class="video-grid"></div></section>
+        <section id="view-liked" class="view" style="display:none;"><div id="liked-grid" class="video-grid"></div></section>
         <section id="view-history" class="view" style="display:none;"><div id="history-grid" class="video-grid"></div></section>
-        <section id="view-subs" class="view" style="display:none;"><h3>Subscribed Channels</h3><div id="subs-grid" class="video-grid"></div></section>
+        <section id="view-channel" class="view" style="display:none;"><h2 id="chan-display-name"></h2><div id="chan-grid" class="video-grid"></div></section>
+        
         <section id="view-watch" class="view" style="display:none;">
-            <div class="watch-grid">
+            <div class="watch-layout">
                 <div>
-                    <div class="player-box" id="player-mount"></div>
-                    <h1 id="p-title" style="font-size:1.4rem; margin:1.5rem 0 0.5rem 0;"></h1>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span id="p-chan" style="color:var(--primary); font-weight:800;"></span>
-                        <button id="sub-btn" onclick="app.toggleSub()" style="background:var(--primary); color:white; border:none; padding:8px 20px; border-radius:20px; font-weight:700; cursor:pointer;">Subscribe</button>
+                    <div class="player-shell" id="player-mount"></div>
+                    <h1 id="p-title" style="margin-top:1.5rem; font-size:1.5rem;"></h1>
+                    <div style="display:flex; justify-content:space-between; margin:1rem 0;">
+                        <span id="p-chan" class="chan-link" style="font-size:1.1rem; cursor:pointer;"></span>
+                        <div style="display:flex; gap:10px;">
+                            <button id="like-btn" onclick="app.toggleLike()" style="padding:10px 20px; border-radius:12px; border:1px solid var(--border); background:var(--card); color:white; cursor:pointer;">❤️ Like</button>
+                            <button onclick="app.blockChannel()" style="padding:10px 20px; border-radius:12px; border:1px solid var(--danger); background:none; color:var(--danger); cursor:pointer;">🚫 Block Channel</button>
+                        </div>
                     </div>
+                    <p id="p-meta" style="opacity:0.6; font-size:0.9rem;"></p>
                 </div>
-                <div><h4 style="margin-top:0;">Neural Recommendations</h4><div id="rec-sidebar"></div></div>
+                <div id="rec-sidebar"></div>
             </div>
         </section>
+
         <section id="view-settings" class="view" style="display:none;">
-            <h3>Failover Key Pool</h3>
-            <textarea id="keyPoolInput" class="search-input" style="width:100%; height:200px; margin-bottom:1rem;" placeholder="Paste keys (one per line)"></textarea>
-            <button onclick="app.updateKeys()" style="width:100%; padding:15px; background:var(--primary); border:none; border-radius:12px; color:white; font-weight:800; cursor:pointer;">Update Engine</button>
+            <h2 style="margin-bottom:2rem;">Engine Orchestrator</h2>
+            <div class="settings-grid">
+                <div class="settings-box">
+                    <h4>Neural Weighting</h4>
+                    <label>History Influence: <span id="v-hist">50</span>%</label>
+                    <input type="range" id="w-history" min="0" max="100" value="50" oninput="app.updateWeights()">
+                    <label>Liked Videos Influence: <span id="v-like">80</span>%</label>
+                    <input type="range" id="w-liked" min="0" max="100" value="80" oninput="app.updateWeights()">
+                    <label>Subscription Weight: <span id="v-subs">100</span>%</label>
+                    <input type="range" id="w-subs" min="0" max="100" value="100" oninput="app.updateWeights()">
+                </div>
+                <div class="settings-box">
+                    <h4>API Infrastructure</h4>
+                    <label>Key Failover Pool (One per line)</label>
+                    <textarea id="keyPoolInput" class="search-input" style="width:100%; height:120px;" placeholder="API Keys..."></textarea>
+                    <button onclick="app.saveSettings()" style="width:100%; margin-top:10px; padding:12px; background:var(--primary); border:none; border-radius:10px; color:white; font-weight:800; cursor:pointer;">Apply Changes</button>
+                </div>
+                <div class="settings-box">
+                    <h4>Content Exile (Blocklist)</h4>
+                    <div id="block-list" style="margin-bottom:1rem;"></div>
+                    <label>Add Channel to Blocklist</label>
+                    <input type="text" id="block-input" class="search-input" style="width:100%;" placeholder="Exact Channel Name..." onkeydown="if(event.key==='Enter') app.addBlock(this.value)">
+                </div>
+            </div>
         </section>
     </div>
 </main>
@@ -110,142 +140,219 @@ from js import window
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-def engine(pool_json, brain_json):
+def sovereign_engine(pool_json, brain_json):
     pool = json.loads(pool_json)
     brain = json.loads(brain_json)
     if not pool: return "[]"
     
+    # Filter Blocked Channels
+    blocked = brain.get('blocklist', [])
+    pool = [v for v in pool if v.get('channel') not in blocked]
+    
     try:
-        # Vectorize Title + Channel for deeper matching
-        corpus = [f"{v['title']} {v['channel']}" for v in pool]
+        corpus = [f"{v['title']} {v.get('channel','')}" for v in pool]
         vectorizer = TfidfVectorizer(stop_words='english')
         tfidf_matrix = vectorizer.fit_transform(corpus)
         
-        # Build Profile from History + Subs
-        profile_text = " ".join([f"{h['title']} {h['channel']}" for h in brain.get('history', [])])
-        profile_text += " " + " ".join(brain.get('subs', []))
+        # Calculate Weighted Profile
+        h_weight = brain.get('weights', {}).get('history', 50) / 100
+        l_weight = brain.get('weights', {}).get('liked', 80) / 100
         
-        if profile_text.strip():
-            p_vec = vectorizer.transform([profile_text])
-            scores = cosine_similarity(p_vec, tfidf_matrix).flatten()
-            for i, v in enumerate(pool):
-                v['score'] = int(scores[i] * 100)
-        else:
-            for v in pool: v['score'] = 0
+        h_text = " ".join([f"{h['title']}" for h in brain.get('history', [])])
+        l_text = " ".join([f"{l['title']}" for l in brain.get('liked', [])])
+        
+        scores = []
+        if h_text.strip():
+            h_vec = vectorizer.transform([h_text])
+            scores.append(cosine_similarity(h_vec, tfidf_matrix).flatten() * h_weight)
+        if l_text.strip():
+            l_vec = vectorizer.transform([l_text])
+            scores.append(cosine_similarity(l_vec, tfidf_matrix).flatten() * l_weight)
             
-        pool.sort(key=lambda x: (x.get('score', 0)), reverse=True)
+        final_scores = sum(scores) if scores else [0] * len(pool)
+        for i, v in enumerate(pool): 
+            v['score'] = int(final_scores[i] * 100)
+            # Extra boost for subscriptions
+            if v.get('channel') in brain.get('subs', []): v['score'] += 20
+            
+        pool.sort(key=lambda x: x.get('score', 0), reverse=True)
     except: pass
     return json.dumps(pool)
 
-window.pyEngine = engine
+window.pyEngine = sovereign_engine
 window.app.onReady()
 </script>
 
 <script>
+const BASE = "/DivTube";
 const app = {
-    db: JSON.parse(localStorage.getItem('DIV_SOV_V50')) || { 
-        keys: [], pool: [], brain: { history: [], subs: [] }, kIdx: 0 
+    db: JSON.parse(localStorage.getItem('DIV_SOV_V53')) || { 
+        keys: [], pool: [], brain: { history: [], liked: [], subs: [], blocklist: [], weights: {history: 50, liked: 80, subs: 100} }, kIdx: 0 
     },
 
-    onReady() {
-        document.getElementById('boot').style.opacity = '0';
-        setTimeout(() => { document.getElementById('boot').remove(); this.init(); }, 600);
-    },
-
-    init() {
+    onReady() { document.getElementById('boot').remove(); this.init(); },
+    init() { 
         document.getElementById('keyPoolInput').value = this.db.keys.join('\n');
-        this.renderSubs();
-        this.route();
+        document.getElementById('w-history').value = this.db.brain.weights.history;
+        document.getElementById('w-liked').value = this.db.brain.weights.liked;
+        document.getElementById('w-subs').value = this.db.brain.weights.subs;
+        this.updateWeights();
+        this.renderBlocklist();
+        this.route(); 
+        window.onpopstate = () => this.route();
     },
+    save() { localStorage.setItem('DIV_SOV_V53', JSON.stringify(this.db)); },
 
-    save() { localStorage.setItem('DIV_SOV_V50', JSON.stringify(this.db)); },
-
-    updateKeys() {
+    saveSettings() {
         this.db.keys = document.getElementById('keyPoolInput').value.split('\n').filter(k => k.trim());
-        this.save(); alert("Engine Updated");
+        this.save();
+        alert("Engine Infrastructure Updated");
     },
 
-    async search(q) {
-        if (!this.db.keys.length) return alert("Add Keys");
-        for (let i = 0; i < this.db.keys.length; i++) {
-            const key = this.db.keys[this.db.kIdx];
-            try {
-                const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}&maxResults=40&type=video&key=${key}`);
-                const data = await res.json();
-                if (data.error) throw new Error();
-                this.db.pool = data.items.map(v => ({
-                    id: v.id.videoId, title: v.snippet.title, channel: v.snippet.channelTitle, thumb: v.snippet.thumbnails.high.url
-                }));
-                this.save(); this.nav('/home'); return;
-            } catch (e) { this.db.kIdx = (this.db.kIdx + 1) % this.db.keys.length; }
-        }
+    updateWeights() {
+        this.db.brain.weights = {
+            history: parseInt(document.getElementById('w-history').value),
+            liked: parseInt(document.getElementById('w-liked').value),
+            subs: parseInt(document.getElementById('w-subs').value)
+        };
+        document.getElementById('v-hist').innerText = this.db.brain.weights.history;
+        document.getElementById('v-like').innerText = this.db.brain.weights.liked;
+        document.getElementById('v-subs').innerText = this.db.brain.weights.subs;
+        this.save();
     },
 
-    nav(path) { window.history.pushState({}, "", path); this.route(); },
+    async search(q, channelId = null) {
+        if (!this.db.keys.length) return alert("Add API Keys in Settings");
+        const key = this.db.keys[this.db.kIdx];
+        let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=28&type=video&key=${key}&q=${q}`;
+        if (channelId) url += `&channelId=${channelId}`;
+
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            const ids = data.items.map(v => v.id.videoId).join(',');
+            
+            const metaRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${ids}&key=${key}`);
+            const meta = await metaRes.json();
+
+            const vids = data.items.map(v => {
+                const m = meta.items.find(mi => mi.id === v.id.videoId);
+                return {
+                    id: v.id.videoId, title: v.snippet.title, channel: v.snippet.channelTitle,
+                    channelId: v.snippet.channelId, thumb: v.snippet.thumbnails.high.url, date: v.snippet.publishedAt,
+                    duration: m ? m.contentDetails.duration.replace('PT','').replace('S','').replace('M',':').replace('H',':') : '',
+                    views: m ? parseInt(m.statistics.viewCount).toLocaleString() : '0'
+                };
+            });
+
+            if (channelId) { this.renderGrid('chan-grid', vids); }
+            else { this.db.pool = vids; this.save(); this.nav('/home'); }
+        } catch (e) { this.db.kIdx = (this.db.kIdx + 1) % this.db.keys.length; }
+    },
+
+    nav(path) { window.history.pushState({}, "", BASE + path); this.route(); },
 
     route() {
-        const path = window.location.pathname.split('/').pop() || 'home';
+        const fullPath = window.location.pathname + window.location.search;
+        const path = fullPath.replace(BASE, "").split('?')[0] || '/home';
+        const params = new URLSearchParams(window.location.search);
+        
         document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        if(document.getElementById(`view-${path}`)) document.getElementById(`view-${path}`).style.display = 'block';
-        if(document.getElementById(`link-${path}`)) document.getElementById(`link-${path}`).classList.add('active');
-        if (path === 'home') this.renderGrid('home-grid', this.db.pool);
-        if (path === 'history') this.renderGrid('history-grid', this.db.brain.history);
+
+        if (path === '/watch') {
+            this.play(params.get('v'));
+            document.getElementById('view-watch').style.display = 'block';
+        } else if (path === '/channel') {
+            document.getElementById('chan-display-name').innerText = params.get('name');
+            this.search("", params.get('id'));
+            document.getElementById('view-channel').style.display = 'block';
+        } else {
+            const vid = path.substring(1);
+            if (document.getElementById(`view-${vid}`)) document.getElementById(`view-${vid}`).style.display = 'block';
+            if (document.getElementById(`link-${vid}`)) document.getElementById(`link-${vid}`).classList.add('active');
+            if (path === '/home') this.renderGrid('home-grid', this.db.pool);
+            if (path === '/liked') this.renderGrid('liked-grid', this.db.brain.liked);
+            if (path === '/history') this.renderGrid('history-grid', this.db.brain.history);
+        }
     },
 
     renderGrid(tid, data) {
         const ranked = JSON.parse(window.pyEngine(JSON.stringify(data), JSON.stringify(this.db.brain)));
         document.getElementById(tid).innerHTML = ranked.map(v => `
-            <div class="card" onclick="app.play('${v.id}')">
-                <img src="${v.thumb}">
+            <div class="card">
+                <div class="thumb-wrap" onclick="app.nav('/watch?v=${v.id}')">
+                    <img src="${v.thumb}">
+                    <div class="duration">${v.duration}</div>
+                </div>
                 <div class="card-meta">
-                    <div class="card-title">${v.title}</div>
-                    <div class="card-chan"><span>${v.channel}</span> <span>${v.score||0}%</span></div>
+                    <div class="card-title" onclick="app.nav('/watch?v=${v.id}')">${v.title}</div>
+                    <div class="chan-link" onclick="app.nav('/channel?id=${v.channelId}&name=${encodeURIComponent(v.channel)}')">${v.channel}</div>
+                    <div style="font-size:0.75rem; opacity:0.4; margin-top:5px;">${v.views} views • ${v.score || 0}% match</div>
                 </div>
             </div>`).join('');
     },
 
     play(id) {
-        const video = [...this.db.pool, ...this.db.brain.history].find(v => v.id === id);
+        const video = [...this.db.pool, ...this.db.brain.history, ...this.db.brain.liked].find(v => v.id === id);
         if (!video) return;
         this.db.brain.history = [video, ...this.db.brain.history.filter(x => x.id !== id)].slice(0, 50);
         this.save();
-        this.nav('/watch');
+
         document.getElementById('player-mount').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>`;
         document.getElementById('p-title').innerText = video.title;
         document.getElementById('p-chan').innerText = video.channel;
-        this.updateSubBtn(video.channel);
-        
-        // Sidebar Recommendations
+        document.getElementById('p-chan').onclick = () => app.nav(`/channel?id=${video.channelId}&name=${encodeURIComponent(video.channel)}`);
+        document.getElementById('p-meta').innerText = `${video.views} views • Published ${new Date(video.date).toLocaleDateString()}`;
+
+        this.updateLikeBtn(id);
+        this.renderRecs(id);
+    },
+
+    renderRecs(currentId) {
         const ranked = JSON.parse(window.pyEngine(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain)));
-        document.getElementById('rec-sidebar').innerHTML = ranked.filter(v => v.id !== id).slice(0, 12).map(v => `
-            <div class="rec-item" onclick="app.play('${v.id}')">
-                <img src="${v.thumb}">
-                <div><div style="font-size:0.8rem; font-weight:700;">${v.title}</div><div style="font-size:0.7rem; color:var(--primary);">${v.channel}</div></div>
+        document.getElementById('rec-sidebar').innerHTML = ranked.filter(v => v.id !== currentId).slice(0, 8).map(v => `
+            <div style="display:flex; gap:12px; margin-bottom:1rem; cursor:pointer;" onclick="app.nav('/watch?v=${v.id}')">
+                <img src="${v.thumb}" style="width:140px; border-radius:10px;">
+                <div><div style="font-size:0.85rem; font-weight:700;">${v.title}</div><div style="font-size:0.7rem; color:var(--primary);">${v.channel}</div></div>
             </div>`).join('');
     },
 
-    toggleSub() {
-        const chan = document.getElementById('p-chan').innerText;
-        if (this.db.brain.subs.includes(chan)) {
-            this.db.brain.subs = this.db.brain.subs.filter(c => c !== chan);
+    toggleLike() {
+        const id = new URLSearchParams(window.location.search).get('v');
+        const video = [...this.db.pool, ...this.db.brain.history].find(v => v.id === id);
+        if (this.db.brain.liked.some(v => v.id === id)) {
+            this.db.brain.liked = this.db.brain.liked.filter(v => v.id !== id);
         } else {
-            this.db.brain.subs.push(chan);
+            this.db.brain.liked.push(video);
         }
-        this.save(); this.renderSubs(); this.updateSubBtn(chan);
+        this.save(); this.updateLikeBtn(id);
     },
 
-    updateSubBtn(chan) {
-        const btn = document.getElementById('sub-btn');
-        const isSubbed = this.db.brain.subs.includes(chan);
-        btn.innerText = isSubbed ? 'Subscribed' : 'Subscribe';
-        btn.style.background = isSubbed ? 'var(--card)' : 'var(--primary)';
-        btn.style.border = isSubbed ? '1px solid var(--border)' : 'none';
+    updateLikeBtn(id) {
+        const isLiked = this.db.brain.liked.some(v => v.id === id);
+        document.getElementById('like-btn').style.background = isLiked ? 'rgba(239, 68, 68, 0.1)' : 'var(--card)';
+        document.getElementById('like-btn').style.color = isLiked ? 'var(--danger)' : 'white';
     },
 
-    renderSubs() {
-        document.getElementById('sub-list').innerHTML = this.db.brain.subs.map(c => `<div class="sub-item">● ${c}</div>`).join('');
-    }
+    blockChannel() {
+        const chan = document.getElementById('p-chan').innerText;
+        if (confirm(`Exile ${chan} from the Neural Engine?`)) {
+            this.db.brain.blocklist.push(chan);
+            this.save();
+            this.nav('/home');
+        }
+    },
+
+    addBlock(val) { if(val) { this.db.brain.blocklist.push(val); this.save(); this.renderBlocklist(); document.getElementById('block-input').value=''; } },
+    
+    renderBlocklist() {
+        document.getElementById('block-list').innerHTML = this.db.brain.blocklist.map((c, i) => `
+            <span class="block-tag">${c} <span style="margin-left:5px; cursor:pointer;" onclick="app.removeBlock(${i})">×</span></span>
+        `).join('');
+    },
+
+    removeBlock(i) { this.db.brain.blocklist.splice(i, 1); this.save(); this.renderBlocklist(); }
 };
 window.app = app;
 </script>
