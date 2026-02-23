@@ -22,7 +22,7 @@
         * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         body { margin: 0; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
 
-        /* Navigation */
+        /* Sidebar */
         aside { width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); padding: 1.5rem; display: flex; flex-direction: column; flex-shrink: 0; }
         .nav-item { padding: 12px 16px; border-radius: 12px; cursor: pointer; color: rgba(255,255,255,0.5); font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 12px; }
         .nav-item:hover, .nav-item.active { background: var(--accent); color: var(--primary); }
@@ -34,17 +34,17 @@
         .search-input { flex: 1; background: var(--card); border: 1px solid var(--border); color: white; padding: 14px 24px; border-radius: 16px; outline: none; }
         .viewport { flex: 1; overflow-y: auto; padding: 2rem; scroll-behavior: smooth; }
         
-        /* Grid & Cards */
+        /* Video Grid */
         .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
         .card { background: var(--card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; position: relative; }
-        .card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .card:hover { border-color: var(--primary); transform: translateY(-4px); }
         .thumb-wrap { position: relative; aspect-ratio: 16/9; }
         .duration { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; }
         .card-meta { padding: 1rem; }
         .card-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .chan-link { color: var(--primary); font-size: 0.8rem; font-weight: 600; }
 
-        /* In-Depth Settings Layout */
+        /* Settings Dashboard */
         .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
         .settings-box { background: var(--card); padding: 1.5rem; border-radius: 20px; border: 1px solid var(--border); }
         .settings-box h4 { margin: 0 0 1rem 0; color: var(--primary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
@@ -54,14 +54,14 @@
         
         /* Watch Mode */
         .watch-layout { display: grid; grid-template-columns: 1fr 380px; gap: 2.5rem; }
-        .player-shell { background: #000; border-radius: 24px; overflow: hidden; aspect-ratio: 16/9; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+        .player-shell { background: #000; border-radius: 24px; overflow: hidden; aspect-ratio: 16/9; border: 1px solid var(--border); }
 
         #boot { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-<div id="boot"><div style="color:var(--primary); font-weight:800; letter-spacing:3px;">SYSTEM_INITIALIZING</div></div>
+<div id="boot"><div style="color:var(--primary); font-weight:800; letter-spacing:3px;">CALIBRATING_NEURAL_RECORDS</div></div>
 
 <aside>
     <div class="logo" onclick="app.nav('/home')">DIVTUBE</div>
@@ -75,12 +75,12 @@
 
 <main>
     <div class="top-bar">
-        <input type="text" class="search-input" id="globalSearch" placeholder="Vector Search..." onkeydown="if(event.key==='Enter') app.search(this.value)">
+        <input type="text" class="search-input" id="globalSearch" placeholder="Inject search vector..." onkeydown="if(event.key==='Enter') app.search(this.value)">
     </div>
     <div class="viewport">
         <section id="view-home" class="view" style="display:none;"><div id="home-grid" class="video-grid"></div></section>
-        <section id="view-liked" class="view" style="display:none;"><div id="liked-grid" class="video-grid"></div></section>
-        <section id="view-history" class="view" style="display:none;"><div id="history-grid" class="video-grid"></div></section>
+        <section id="view-liked" class="view" style="display:none;"><h2>Liked Videos</h2><div id="liked-grid" class="video-grid"></div></section>
+        <section id="view-history" class="view" style="display:none;"><h2>History</h2><div id="history-grid" class="video-grid"></div></section>
         <section id="view-channel" class="view" style="display:none;"><h2 id="chan-display-name"></h2><div id="chan-grid" class="video-grid"></div></section>
         
         <section id="view-watch" class="view" style="display:none;">
@@ -92,7 +92,7 @@
                         <span id="p-chan" class="chan-link" style="font-size:1.1rem; cursor:pointer;"></span>
                         <div style="display:flex; gap:10px;">
                             <button id="like-btn" onclick="app.toggleLike()" style="padding:10px 20px; border-radius:12px; border:1px solid var(--border); background:var(--card); color:white; cursor:pointer;">❤️ Like</button>
-                            <button onclick="app.blockChannel()" style="padding:10px 20px; border-radius:12px; border:1px solid var(--danger); background:none; color:var(--danger); cursor:pointer;">🚫 Block Channel</button>
+                            <button onclick="app.blockChannel()" style="padding:10px 20px; border-radius:12px; border:1px solid var(--danger); background:none; color:var(--danger); cursor:pointer;">🚫 Block</button>
                         </div>
                     </div>
                     <p id="p-meta" style="opacity:0.6; font-size:0.9rem;"></p>
@@ -102,28 +102,25 @@
         </section>
 
         <section id="view-settings" class="view" style="display:none;">
-            <h2 style="margin-bottom:2rem;">Engine Orchestrator</h2>
+            <h2 style="margin-bottom:2rem;">Engine Settings</h2>
             <div class="settings-grid">
                 <div class="settings-box">
-                    <h4>Neural Weighting</h4>
+                    <h4>Neural Logic</h4>
                     <label>History Influence: <span id="v-hist">50</span>%</label>
                     <input type="range" id="w-history" min="0" max="100" value="50" oninput="app.updateWeights()">
-                    <label>Liked Videos Influence: <span id="v-like">80</span>%</label>
+                    <label>Liked Weight: <span id="v-like">80</span>%</label>
                     <input type="range" id="w-liked" min="0" max="100" value="80" oninput="app.updateWeights()">
-                    <label>Subscription Weight: <span id="v-subs">100</span>%</label>
-                    <input type="range" id="w-subs" min="0" max="100" value="100" oninput="app.updateWeights()">
+                    <button onclick="app.exportData()" style="width:100%; margin-top:10px; padding:10px; border-radius:8px; border:1px solid var(--primary); background:none; color:var(--primary); cursor:pointer;">Export JSON Model</button>
                 </div>
                 <div class="settings-box">
-                    <h4>API Infrastructure</h4>
-                    <label>Key Failover Pool (One per line)</label>
+                    <h4>API Pool</h4>
                     <textarea id="keyPoolInput" class="search-input" style="width:100%; height:120px;" placeholder="API Keys..."></textarea>
-                    <button onclick="app.saveSettings()" style="width:100%; margin-top:10px; padding:12px; background:var(--primary); border:none; border-radius:10px; color:white; font-weight:800; cursor:pointer;">Apply Changes</button>
+                    <button onclick="app.saveSettings()" style="width:100%; margin-top:10px; padding:12px; background:var(--primary); border:none; border-radius:10px; color:white; font-weight:800; cursor:pointer;">Save Keys</button>
                 </div>
                 <div class="settings-box">
-                    <h4>Content Exile (Blocklist)</h4>
+                    <h4>Blocked Channels</h4>
                     <div id="block-list" style="margin-bottom:1rem;"></div>
-                    <label>Add Channel to Blocklist</label>
-                    <input type="text" id="block-input" class="search-input" style="width:100%;" placeholder="Exact Channel Name..." onkeydown="if(event.key==='Enter') app.addBlock(this.value)">
+                    <input type="text" id="block-input" class="search-input" style="width:100%;" placeholder="Add Channel..." onkeydown="if(event.key==='Enter') app.addBlock(this.value)">
                 </div>
             </div>
         </section>
@@ -140,12 +137,11 @@ from js import window
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-def sovereign_engine(pool_json, brain_json):
+def engine_rank(pool_json, brain_json):
     pool = json.loads(pool_json)
     brain = json.loads(brain_json)
     if not pool: return "[]"
     
-    # Filter Blocked Channels
     blocked = brain.get('blocklist', [])
     pool = [v for v in pool if v.get('channel') not in blocked]
     
@@ -154,11 +150,10 @@ def sovereign_engine(pool_json, brain_json):
         vectorizer = TfidfVectorizer(stop_words='english')
         tfidf_matrix = vectorizer.fit_transform(corpus)
         
-        # Calculate Weighted Profile
         h_weight = brain.get('weights', {}).get('history', 50) / 100
         l_weight = brain.get('weights', {}).get('liked', 80) / 100
         
-        h_text = " ".join([f"{h['title']}" for h in brain.get('history', [])])
+        h_text = " ".join([f"{h['title']}" for h in brain.get('history', [])[-10:]])
         l_text = " ".join([f"{l['title']}" for l in brain.get('liked', [])])
         
         scores = []
@@ -172,66 +167,53 @@ def sovereign_engine(pool_json, brain_json):
         final_scores = sum(scores) if scores else [0] * len(pool)
         for i, v in enumerate(pool): 
             v['score'] = int(final_scores[i] * 100)
-            # Extra boost for subscriptions
             if v.get('channel') in brain.get('subs', []): v['score'] += 20
             
         pool.sort(key=lambda x: x.get('score', 0), reverse=True)
     except: pass
     return json.dumps(pool)
 
-window.pyEngine = sovereign_engine
+window.pyEngine = engine_rank
 window.app.onReady()
 </script>
 
 <script>
 const BASE = "/DivTube";
 const app = {
-    db: JSON.parse(localStorage.getItem('DIV_SOV_V53')) || { 
+    db: JSON.parse(localStorage.getItem('DIV_SOV_V54')) || { 
         keys: [], pool: [], brain: { history: [], liked: [], subs: [], blocklist: [], weights: {history: 50, liked: 80, subs: 100} }, kIdx: 0 
     },
 
     onReady() { document.getElementById('boot').remove(); this.init(); },
     init() { 
         document.getElementById('keyPoolInput').value = this.db.keys.join('\n');
-        document.getElementById('w-history').value = this.db.brain.weights.history;
-        document.getElementById('w-liked').value = this.db.brain.weights.liked;
-        document.getElementById('w-subs').value = this.db.brain.weights.subs;
         this.updateWeights();
         this.renderBlocklist();
         this.route(); 
         window.onpopstate = () => this.route();
     },
-    save() { localStorage.setItem('DIV_SOV_V53', JSON.stringify(this.db)); },
-
-    saveSettings() {
-        this.db.keys = document.getElementById('keyPoolInput').value.split('\n').filter(k => k.trim());
-        this.save();
-        alert("Engine Infrastructure Updated");
-    },
+    save() { localStorage.setItem('DIV_SOV_V54', JSON.stringify(this.db)); },
 
     updateWeights() {
         this.db.brain.weights = {
-            history: parseInt(document.getElementById('w-history').value),
-            liked: parseInt(document.getElementById('w-liked').value),
-            subs: parseInt(document.getElementById('w-subs').value)
+            history: parseInt(document.getElementById('w-history').value || 50),
+            liked: parseInt(document.getElementById('w-liked').value || 80)
         };
         document.getElementById('v-hist').innerText = this.db.brain.weights.history;
         document.getElementById('v-like').innerText = this.db.brain.weights.liked;
-        document.getElementById('v-subs').innerText = this.db.brain.weights.subs;
         this.save();
     },
 
-    async search(q, channelId = null) {
-        if (!this.db.keys.length) return alert("Add API Keys in Settings");
+    async search(q, channelId = null, isSilent = false) {
+        if (!this.db.keys.length) return;
         const key = this.db.keys[this.db.kIdx];
-        let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=28&type=video&key=${key}&q=${q}`;
+        let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=30&type=video&key=${key}&q=${q}`;
         if (channelId) url += `&channelId=${channelId}`;
 
         try {
             const res = await fetch(url);
             const data = await res.json();
             const ids = data.items.map(v => v.id.videoId).join(',');
-            
             const metaRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${ids}&key=${key}`);
             const meta = await metaRes.json();
 
@@ -246,11 +228,23 @@ const app = {
             });
 
             if (channelId) { this.renderGrid('chan-grid', vids); }
-            else { this.db.pool = vids; this.save(); this.nav('/home'); }
+            else { 
+                this.db.pool = vids; 
+                this.save(); 
+                if(!isSilent) this.nav('/home'); else this.renderGrid('home-grid', this.db.pool);
+            }
         } catch (e) { this.db.kIdx = (this.db.kIdx + 1) % this.db.keys.length; }
     },
 
-    nav(path) { window.history.pushState({}, "", BASE + path); this.route(); },
+    nav(path) { 
+        if(path === '/home') {
+            // "REFRESH" LOGIC: Use last 3 history items to seed home
+            const seed = this.db.brain.history.slice(0,3).map(v => v.title).join(' ');
+            if(seed) this.search(seed, null, true);
+        }
+        window.history.pushState({}, "", BASE + path); 
+        this.route(); 
+    },
 
     route() {
         const fullPath = window.location.pathname + window.location.search;
@@ -278,6 +272,7 @@ const app = {
     },
 
     renderGrid(tid, data) {
+        if(!window.pyEngine) return;
         const ranked = JSON.parse(window.pyEngine(JSON.stringify(data), JSON.stringify(this.db.brain)));
         document.getElementById(tid).innerHTML = ranked.map(v => `
             <div class="card">
@@ -298,61 +293,46 @@ const app = {
         if (!video) return;
         this.db.brain.history = [video, ...this.db.brain.history.filter(x => x.id !== id)].slice(0, 50);
         this.save();
-
         document.getElementById('player-mount').innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>`;
         document.getElementById('p-title').innerText = video.title;
         document.getElementById('p-chan').innerText = video.channel;
         document.getElementById('p-chan').onclick = () => app.nav(`/channel?id=${video.channelId}&name=${encodeURIComponent(video.channel)}`);
         document.getElementById('p-meta').innerText = `${video.views} views • Published ${new Date(video.date).toLocaleDateString()}`;
-
         this.updateLikeBtn(id);
-        this.renderRecs(id);
-    },
-
-    renderRecs(currentId) {
-        const ranked = JSON.parse(window.pyEngine(JSON.stringify(this.db.pool), JSON.stringify(this.db.brain)));
-        document.getElementById('rec-sidebar').innerHTML = ranked.filter(v => v.id !== currentId).slice(0, 8).map(v => `
-            <div style="display:flex; gap:12px; margin-bottom:1rem; cursor:pointer;" onclick="app.nav('/watch?v=${v.id}')">
-                <img src="${v.thumb}" style="width:140px; border-radius:10px;">
-                <div><div style="font-size:0.85rem; font-weight:700;">${v.title}</div><div style="font-size:0.7rem; color:var(--primary);">${v.channel}</div></div>
-            </div>`).join('');
-    },
-
-    toggleLike() {
-        const id = new URLSearchParams(window.location.search).get('v');
-        const video = [...this.db.pool, ...this.db.brain.history].find(v => v.id === id);
-        if (this.db.brain.liked.some(v => v.id === id)) {
-            this.db.brain.liked = this.db.brain.liked.filter(v => v.id !== id);
-        } else {
-            this.db.brain.liked.push(video);
-        }
-        this.save(); this.updateLikeBtn(id);
     },
 
     updateLikeBtn(id) {
         const isLiked = this.db.brain.liked.some(v => v.id === id);
         document.getElementById('like-btn').style.background = isLiked ? 'rgba(239, 68, 68, 0.1)' : 'var(--card)';
-        document.getElementById('like-btn').style.color = isLiked ? 'var(--danger)' : 'white';
+    },
+
+    toggleLike() {
+        const id = new URLSearchParams(window.location.search).get('v');
+        const video = [...this.db.pool, ...this.db.brain.history].find(v => v.id === id);
+        if (this.db.brain.liked.some(v => v.id === id)) this.db.brain.liked = this.db.brain.liked.filter(v => v.id !== id);
+        else this.db.brain.liked.push(video);
+        this.save(); this.updateLikeBtn(id);
     },
 
     blockChannel() {
         const chan = document.getElementById('p-chan').innerText;
-        if (confirm(`Exile ${chan} from the Neural Engine?`)) {
-            this.db.brain.blocklist.push(chan);
-            this.save();
-            this.nav('/home');
-        }
+        this.db.brain.blocklist.push(chan);
+        this.save(); this.nav('/home');
     },
 
-    addBlock(val) { if(val) { this.db.brain.blocklist.push(val); this.save(); this.renderBlocklist(); document.getElementById('block-input').value=''; } },
-    
     renderBlocklist() {
-        document.getElementById('block-list').innerHTML = this.db.brain.blocklist.map((c, i) => `
-            <span class="block-tag">${c} <span style="margin-left:5px; cursor:pointer;" onclick="app.removeBlock(${i})">×</span></span>
-        `).join('');
+        document.getElementById('block-list').innerHTML = this.db.brain.blocklist.map((c, i) => `<span class="block-tag">${c} <span onclick="app.removeBlock(${i})" style="cursor:pointer">×</span></span>`).join('');
     },
-
-    removeBlock(i) { this.db.brain.blocklist.splice(i, 1); this.save(); this.renderBlocklist(); }
+    
+    removeBlock(i) { this.db.brain.blocklist.splice(i, 1); this.save(); this.renderBlocklist(); },
+    
+    exportData() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.db));
+        const dlAnchor = document.createElement('a');
+        dlAnchor.setAttribute("href", dataStr);
+        dlAnchor.setAttribute("download", "divtube_model.json");
+        dlAnchor.click();
+    }
 };
 window.app = app;
 </script>
