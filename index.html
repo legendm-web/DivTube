@@ -14,7 +14,7 @@
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
+        : root {
             --bg: #030305; --sidebar: #08080c; --card: #0f0f17;
             --primary: #a78bfa; --text: #f8fafc; --text-dim: #94a3b8;
             --border: rgba(255,255,255,0.08); --accent: #1e1b4b;
@@ -40,7 +40,7 @@
         .search-bar:focus { border-color: var(--primary); }
 
         .viewport { flex: 1; overflow-y: auto; padding: 2rem; scroll-behavior: smooth; }
-        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem 1.5rem; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem 1.5rem; padding-bottom: 2rem; }
         
         /* Video Cards */
         .card { cursor: pointer; }
@@ -69,6 +69,9 @@
         #boot { position: fixed; inset: 0; background: #030305; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
         .spinner { width: 30px; height: 30px; border: 3px solid var(--surface); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Loading indicator for infinite scroll */
+        #scroll-loader { text-align: center; padding: 1rem; color: var(--primary); font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; display: none; }
     </style>
 </head>
 <body>
@@ -97,7 +100,7 @@
         </div>
     </header>
 
-    <div class="viewport">
+    <div class="viewport" id="main-viewport">
         <section id="view-home" class="view" style="display:none;"><div id="home-grid" class="video-grid"></div></section>
         <section id="view-search" class="view" style="display:none;"><div id="search-grid" class="video-grid"></div></section>
         <section id="view-history" class="view" style="display:none;"><div id="history-grid" class="video-grid"></div></section>
@@ -148,6 +151,8 @@
                 </div>
             </div>
         </section>
+        
+        <div id="scroll-loader">Resolving Next Cluster...</div>
     </div>
 </main>
 
@@ -159,9 +164,16 @@
 const BASE = "/DivTube";
 const app = {
     db: JSON.parse(localStorage.getItem('DIV_SOV_V61')) || { 
-        keys: [], pool: [], search_results: [], 
+        keys: [], pool: [], search_results: [], chan_results: [],
         brain: { history: [], liked: [], search_history: [], blocklist: [], weights: {temp: 10} }, kIdx: 0 
     },
+    
+    // Tracking Variables for Infinite Scroll
+    isLoading: false,
+    pageToken: null,
+    currentQuery: "",
+    currentType: "home",
+    currentChannelId: null,
 
     onReady() { 
         document.getElementById('boot').style.opacity = '0';
@@ -175,6 +187,16 @@ const app = {
         this.syncSettings();
         this.route(); 
         window.onpopstate = () => this.route();
+        
+        // Initialize Infinite Scroll Event Listener
+        const viewport = document.getElementById('main-viewport');
+        viewport.addEventListener('scroll', () => {
+            if (viewport.scrollTop + viewport.clientHeight >= viewport.scrollHeight - 300) {
+                if (!this.isLoading && this.pageToken) {
+                    this.fetchVideos(this.currentQuery, this.currentType, this.currentChannelId, true);
+                }
+            }
+        });
     },
 
     save() { localStorage.setItem('DIV_SOV_V61', JSON.stringify(this.db)); },
@@ -185,26 +207,42 @@ const app = {
         this.save();
     },
 
-    async fetchVideos(q, type = 'home', channelId = null) {
+    async fetchVideos(q, type = 'home', channelId = null, loadMore = false) {
         if (!this.db.keys || !this.db.keys.length) {
             alert("Please deploy a YouTube API Key in settings first.");
             this.nav('/settings');
             return;
         }
         
+        if (this.isLoading) return;
+        this.isLoading = true;
+        
+        // Reset context and token if it's a fresh fetch
+        if (!loadMore) {
+            this.pageToken = null;
+            this.currentQuery = q;
+            this.currentType = type;
+            this.currentChannelId = channelId;
+        }
+        
         const bar = document.getElementById('loading-bar');
-        bar.style.width = '30%';
+        const scrollLoader = document.getElementById('scroll-loader');
+        if (loadMore) scrollLoader.style.display = 'block'; else bar.style.width = '30%';
 
         const key = this.db.keys[this.db.kIdx];
         let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=24&type=video&key=${key}&q=${encodeURIComponent(q)}`;
         if (channelId) url += `&channelId=${channelId}`;
+        if (loadMore && this.pageToken) url += `&pageToken=${this.pageToken}`;
 
         try {
             const res = await fetch(url);
             const data = await res.json();
             if(data.error) throw new Error(data.error.message);
             
-            bar.style.width = '60%';
+            if (!loadMore) bar.style.width = '60%';
+            
+            // Save Next Page Token
+            this.pageToken = data.nextPageToken || null;
 
             const ids = data.items.map(v => v.id.videoId).join(',');
             const metaRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${ids}&key=${key}`);
@@ -213,7 +251,6 @@ const app = {
             const vids = data.items.map(v => {
                 const m = meta.items.find(mi => mi.id === v.id.videoId);
                 
-                // Better duration parser
                 let formattedDuration = '';
                 if(m && m.contentDetails) {
                     const match = m.contentDetails.duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
@@ -233,18 +270,32 @@ const app = {
                 };
             });
 
-            if (type === 'home') { this.db.pool = vids; this.renderGrid('home-grid', vids); }
-            else if (type === 'search') { this.db.search_results = vids; this.renderGrid('search-grid', vids); }
-            else if (type === 'watch') { this.renderGrid('rec-sidebar', vids, true); }
-            else if (type === 'chan') { this.renderGrid('chan-grid', vids); }
+            if (type === 'home') { 
+                if (loadMore) this.db.pool.push(...vids); else this.db.pool = vids;
+                this.renderGrid('home-grid', vids, false, loadMore); 
+            }
+            else if (type === 'search') { 
+                if (loadMore) this.db.search_results.push(...vids); else this.db.search_results = vids;
+                this.renderGrid('search-grid', vids, false, loadMore); 
+            }
+            else if (type === 'watch') { 
+                // Sidebar appending not highly necessary, but supported
+                this.renderGrid('rec-sidebar', vids, true, loadMore); 
+            }
+            else if (type === 'chan') { 
+                if (loadMore) this.db.chan_results.push(...vids); else this.db.chan_results = vids;
+                this.renderGrid('chan-grid', vids, false, loadMore); 
+            }
             
             this.save();
-            bar.style.width = '100%';
-            setTimeout(() => bar.style.width = '0%', 400);
+            if (!loadMore) { bar.style.width = '100%'; setTimeout(() => bar.style.width = '0%', 400); }
         } catch (e) { 
             console.error("Fetch Error:", e);
             this.db.kIdx = (this.db.kIdx + 1) % this.db.keys.length; 
             bar.style.width = '0%';
+        } finally {
+            this.isLoading = false;
+            scrollLoader.style.display = 'none';
         }
     },
 
@@ -285,10 +336,14 @@ const app = {
         }
     },
 
-    renderGrid(tid, data, isSmall = false) {
+    // Updated renderGrid to support appending HTML
+    renderGrid(tid, data, isSmall = false, append = false) {
         if(!window.pyEngine || !data) return;
+        
+        // Evaluate and rank just the passed batch of data
         const ranked = JSON.parse(window.pyEngine(JSON.stringify(data), JSON.stringify(this.db.brain)));
-        document.getElementById(tid).innerHTML = ranked.map(v => isSmall ? `
+        
+        const html = ranked.map(v => isSmall ? `
             <div style="display:grid; grid-template-columns:150px 1fr; gap:12px; margin-bottom:1rem; cursor:pointer;" onclick="app.nav('/watch?v=${v.id}')">
                 <img src="${v.thumb}" style="width:100%; border-radius:10px;">
                 <div style="font-size:0.85rem; font-weight:700; line-height:1.2;">${v.title}</div>
@@ -304,10 +359,17 @@ const app = {
                     </div>
                 </div>
             </div>`).join('');
+            
+        const container = document.getElementById(tid);
+        if (append) {
+            container.insertAdjacentHTML('beforeend', html);
+        } else {
+            container.innerHTML = html;
+        }
     },
 
     play(id) {
-        const video = [...this.db.pool, ...this.db.search_results, ...this.db.brain.history, ...this.db.brain.liked].find(v => v.id === id);
+        const video = [...this.db.pool, ...this.db.search_results, ...(this.db.chan_results || []), ...this.db.brain.history, ...this.db.brain.liked].find(v => v.id === id);
         if (!video) return;
         this.db.brain.history = [video, ...this.db.brain.history.filter(x => x.id !== id)].slice(0, 50);
         this.save();
@@ -345,7 +407,7 @@ const app = {
 
     toggleLike() {
         const id = new URLSearchParams(window.location.search).get('v');
-        const video = [...this.db.pool, ...this.db.brain.history, ...this.db.search_results].find(v => v.id === id);
+        const video = [...this.db.pool, ...this.db.brain.history, ...this.db.search_results, ...(this.db.chan_results || [])].find(v => v.id === id);
         if (this.db.brain.liked.some(v => v.id === id)) this.db.brain.liked = this.db.brain.liked.filter(v => v.id !== id);
         else if (video) this.db.brain.liked.push(video);
         this.save(); this.updateLikeBtn(id);
